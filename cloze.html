@@ -181,6 +181,9 @@
   }
   .wb-item .ctx{color:var(--ink-soft);}
   .wb-item .ctx b{color:var(--ink); background:#f4e9cf; padding:0 3px; border-radius:2px;}
+  .wb-item .streak-note{
+    display:block; font-size:11.5px; color:var(--green); margin:4px 0 2px;
+  }
   .wb-item .ans-row{display:flex; justify-content:space-between; align-items:center; margin-top:6px; gap:8px;}
   .wb-item .ans{font-size:12.5px;}
   .wb-item .ans .yours{color:var(--red);}
@@ -491,7 +494,7 @@
         wrap.classList.add('correct');
         icon.textContent = '✓';
         icon.className = 'mark-icon ok';
-        removeFromWrongBook(passage.id, num);
+        registerCorrectAnswer(passage.id, num);
       } else {
         wrap.classList.add('wrong');
         icon.textContent = '✗';
@@ -536,6 +539,7 @@
       correct: passage.answers[num],
       yourAnswer: yourAnswer || '(空白未作答)',
       wrongCount: 1,
+      correctStreak: 0,
       updatedAt: Date.now()
     };
     if(idx === -1){
@@ -543,18 +547,32 @@
     } else {
       wrongBook[idx].yourAnswer = entry.yourAnswer;
       wrongBook[idx].wrongCount += 1;
+      wrongBook[idx].correctStreak = 0; // a wrong answer resets progress toward removal
       wrongBook[idx].updatedAt = Date.now();
     }
   }
   function removeFromWrongBook(passageId, num){
     wrongBook = wrongBook.filter(function(w){ return !(w.passageId===passageId && w.blank===num); });
   }
+  // A correct answer only removes the entry once it's been answered correctly
+  // twice (not necessarily consecutively across sessions, but a fresh wrong
+  // answer resets the streak back to 0).
+  var REQUIRED_CORRECT_STREAK = 2;
+  function registerCorrectAnswer(passageId, num){
+    var idx = wrongBook.findIndex(function(w){ return w.passageId===passageId && w.blank===num; });
+    if(idx === -1) return; // wasn't in the wrong book, nothing to do
+    wrongBook[idx].correctStreak = (wrongBook[idx].correctStreak || 0) + 1;
+    wrongBook[idx].updatedAt = Date.now();
+    if(wrongBook[idx].correctStreak >= REQUIRED_CORRECT_STREAK){
+      wrongBook.splice(idx, 1);
+    }
+  }
 
   // ---------- WRONG BOOK ----------
   function renderWrongBook(){
     var html = '';
     html += '<h1 class="page-title">错题本</h1>';
-    html += '<p class="page-sub">收录了历次练习中答错的题目。可以针对错题专项重练，答对后会自动从错题本移除。</p>';
+    html += '<p class="page-sub">收录了历次练习中答错的题目。需要连续答对 '+REQUIRED_CORRECT_STREAK+' 次才会从错题本移除，只答对一次会先记录进度，若中途再答错则进度清零。</p>';
 
     if(wrongBook.length === 0){
       html += '<div class="empty-state"><span class="big">📗</span>暂时没有错题，太棒了！<br>去「全部篇章」里练习一篇试试吧。</div>';
@@ -579,8 +597,13 @@
       items.sort(function(a,b){ return parseInt(a.blank)-parseInt(b.blank); });
       items.forEach(function(w){
         var ctx = passage ? shortContext(passage, w.blank) : '';
+        var streak = w.correctStreak || 0;
+        var streakNote = streak > 0
+          ? '<span class="streak-note">已连续答对 '+streak+'/'+REQUIRED_CORRECT_STREAK+' 次，再对一次即可移除</span>'
+          : '';
         html += '<div class="wb-item" data-pid="'+pid+'" data-blank="'+w.blank+'">'
           + '<div class="ctx">('+w.blank+') '+ctx+'</div>'
+          + streakNote
           + '<div class="ans-row"><div class="ans">你的答案：<span class="yours">'+escapeHtml(w.yourAnswer)+'</span>　正确答案：<span class="right">'+escapeHtml(w.correct.join(' / '))+'</span></div>'
           + '<button class="rm-btn" data-rm="1">移除</button></div>'
           + '</div>';
@@ -645,7 +668,7 @@
         correctCount++;
         wrap.classList.add('correct');
         icon.textContent = '✓'; icon.className = 'mark-icon ok';
-        removeFromWrongBook(pid, blank);
+        registerCorrectAnswer(pid, blank);
       } else {
         wrap.classList.add('wrong');
         icon.textContent = '✗'; icon.className = 'mark-icon no';
