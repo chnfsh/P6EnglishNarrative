@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>英文单词错题本 · 20天遗忘曲线复习</title>
+<style>
+  :root{
+    --paper:#FAF6EC;
+    --paper-shadow:#EDE6D3;
+    --ink:#242422;
+    --ink-soft:#5b564a;
+    --rule:#d8cfb6;
+    --red:#B5312C;
+    --red-soft:#e7d4d1;
+    --green:#3f6b4a;
+    --green-soft:#dbe6dc;
+    --gold:#a9822f;
+    --card-shadow: 0 2px 0 rgba(36,36,34,0.06), 0 10px 24px -14px rgba(36,36,34,0.35);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 700px at 10% -10%, #fffdf6 0%, var(--paper) 45%),
+      var(--paper);
+    color:var(--ink);
+    font-family: "Source Serif 4","Noto Serif SC","Songti SC", Georgia, "Times New Roman", serif;
+    min-height:100vh;
+    padding-bottom:64px;
+  }
+  .wrap{max-width:720px; margin:0 auto; padding:0 16px;}
+
+  header.top{
+    position:sticky; top:0; z-index:20;
+    background:rgba(250,246,236,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--rule);
+  }
+  .top-inner{
+    max-width:720px;margin:0 auto;padding:12px 16px;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+  .brand{display:flex; flex-direction:column; line-height:1.15;}
+  .brand b{font-size:16px; letter-spacing:.5px;}
+  .brand span{font-size:11px; color:var(--ink-soft); font-family:Georgia,serif; letter-spacing:1px;}
+  .top-inner a.back{
+    font-size:12.5px; color:var(--ink-soft); text-decoration:none; border:1px solid var(--rule);
+    background:#fff8ea; padding:6px 12px; border-radius:999px; white-space:nowrap;
+  }
+  .top-inner a.back:hover{color:var(--ink); border-color:var(--gold);}
+
+  h1.page-title{font-size:20px; margin:22px 0 4px; letter-spacing:.3px;}
+  p.page-sub{color:var(--ink-soft); font-size:13.5px; margin:0 0 20px; line-height:1.7;}
+
+  /* ---- dashboard stat strip ---- */
+  .stat-strip{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:18px;}
+  .stat-card{
+    background:#fffef9; border:1px solid var(--rule); border-radius:3px; box-shadow:var(--card-shadow);
+    padding:14px 10px; text-align:center;
+  }
+  .stat-card b{display:block; font-size:22px; font-family:Georgia,serif; color:var(--ink);}
+  .stat-card span{font-size:11.5px; color:var(--ink-soft);}
+  .stat-card.due b{color:var(--red);}
+  .stat-card.mastered b{color:var(--green);}
+
+  .action-row{display:flex; gap:10px; margin:6px 0 22px; flex-wrap:wrap;}
+  .btn{
+    font-family:"Noto Serif SC",serif; font-size:14px; padding:11px 20px; border-radius:3px;
+    border:1px solid var(--ink); background:var(--ink); color:var(--paper); cursor:pointer;
+  }
+  .btn.secondary{background:transparent; color:var(--ink); border:1px solid var(--rule);}
+  .btn.danger{background:transparent; color:var(--red); border:1px solid var(--red);}
+  .btn:disabled{opacity:.4; cursor:not-allowed;}
+  .btn.block{display:block; width:100%; text-align:center;}
+
+  /* ---- schedule note ---- */
+  .schedule-note{
+    font-size:11.5px; color:var(--ink-soft); background:#fff8ea; border:1px dashed var(--rule);
+    border-radius:3px; padding:10px 12px; margin-bottom:20px; line-height:1.7;
+  }
+  .schedule-note b{color:var(--gold);}
+
+  /* ---- add word form ---- */
+  .add-form{
+    background:#fffef9; border:1px solid var(--rule); border-radius:3px; box-shadow:var(--card-shadow);
+    padding:20px; margin-bottom:22px; display:none;
+  }
+  .add-form.open{display:block;}
+  .add-form h3{margin:0 0 14px; font-size:15px;}
+  .add-form label{display:block; font-size:12.5px; color:var(--ink-soft); margin-bottom:4px;}
+  .add-form input[type=text], .add-form textarea{
+    width:100%; font-family:inherit; font-size:14px; padding:9px 10px; border:1px solid var(--rule);
+    border-radius:2px; background:#fffef9; color:var(--ink); margin-bottom:14px;
+  }
+  .add-form textarea{resize:vertical; min-height:60px;}
+  .add-form input:focus, .add-form textarea:focus{outline:none; border-color:var(--gold); background:#fbf3df;}
+  .mode-toggle{display:flex; gap:8px; margin-bottom:16px;}
+  .mode-toggle button{
+    flex:1; font-family:"Noto Serif SC",serif; font-size:12.5px; padding:7px 8px; border-radius:999px;
+    border:1px solid var(--rule); background:#fff8ea; color:var(--ink-soft); cursor:pointer;
+  }
+  .mode-toggle button.active{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+  .bulk-hint{font-size:11.5px; color:var(--ink-soft); margin:-8px 0 12px; line-height:1.6;}
+
+  /* ---- word list ---- */
+  .word-card{
+    background:#fffef9; border:1px solid var(--rule); border-radius:3px; box-shadow:var(--card-shadow);
+    padding:16px 18px; margin-bottom:12px; position:relative;
+  }
+  .word-card.due{border-left:4px solid var(--red);}
+  .word-card.mastered{border-left:4px solid var(--green); opacity:.85;}
+  .word-row{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+  .word-en{font-size:17px; font-weight:600;}
+  .word-zh{font-size:13.5px; color:var(--ink-soft); margin-top:2px;}
+  .word-ex{font-size:12.5px; color:var(--ink-soft); font-style:italic; margin-top:6px; line-height:1.6;}
+  .word-actions{display:flex; gap:6px; flex-shrink:0;}
+  .icon-btn{
+    border:1px solid var(--rule); background:#fff8ea; color:var(--ink-soft); border-radius:3px;
+    padding:4px 8px; font-size:12px; cursor:pointer; font-family:inherit;
+  }
+  .icon-btn:hover{border-color:var(--gold); color:var(--ink);}
+  .progress-row{display:flex; align-items:center; gap:8px; margin-top:12px;}
+  .dots{display:flex; gap:4px;}
+  .dot{width:8px; height:8px; border-radius:50%; background:var(--rule);}
+  .dot.filled{background:var(--gold);}
+  .dot.current{background:var(--red); box-shadow:0 0 0 2px var(--red-soft);}
+  .countdown-label{font-size:11.5px; color:var(--ink-soft); margin-left:auto; white-space:nowrap;}
+  .countdown-label.due{color:var(--red); font-weight:600;}
+  .countdown-label.mastered{color:var(--green); font-weight:600;}
+
+  .empty-state{
+    text-align:center; padding:50px 20px; color:var(--ink-soft); font-size:14px; line-height:1.8;
+  }
+  .empty-state .big{font-size:34px; display:block; margin-bottom:10px;}
+
+  .section-h{font-size:14px; color:var(--ink-soft); margin:26px 0 10px; border-bottom:1px solid var(--rule); padding-bottom:6px;}
+
+  /* ---- review flashcard ---- */
+  .flash-wrap{display:flex; flex-direction:column; align-items:center; padding:30px 10px 10px;}
+  .flash-progress{font-size:12px; color:var(--ink-soft); margin-bottom:16px; font-family:Georgia,serif; letter-spacing:1px;}
+  .flashcard{
+    width:100%; max-width:420px; min-height:220px; background:#fffef9; border:1px solid var(--rule);
+    border-radius:4px; box-shadow:var(--card-shadow); padding:30px 24px; text-align:center;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative;
+    cursor:pointer;
+  }
+  .flashcard::before{
+    content:""; position:absolute; left:0; right:0; top:0; height:5px;
+    background:repeating-linear-gradient(90deg, var(--gold) 0 14px, transparent 14px 22px);
+    opacity:.35; border-radius:4px 4px 0 0;
+  }
+  .flash-en{font-size:26px; font-weight:600; margin-bottom:6px;}
+  .flash-hint{font-size:12px; color:var(--gold); margin-top:14px;}
+  .flash-zh{font-size:17px; color:var(--ink); margin-top:10px;}
+  .flash-ex{font-size:13px; color:var(--ink-soft); font-style:italic; margin-top:12px; line-height:1.6;}
+  .flash-buttons{display:flex; gap:14px; margin-top:24px; width:100%; max-width:420px;}
+  .flash-buttons button{
+    flex:1; padding:14px 10px; font-family:"Noto Serif SC",serif; font-size:14.5px; border-radius:4px;
+    cursor:pointer; font-weight:600;
+  }
+  .btn-forgot{background:var(--red-soft); color:var(--red); border:1px solid var(--red);}
+  .btn-remember{background:var(--green-soft); color:var(--green); border:1px solid var(--green);}
+
+  .toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:var(--paper); padding:9px 18px; border-radius:4px; font-size:13px;
+    box-shadow:0 8px 20px rgba(0,0,0,.25); z-index:50; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(-6px);}
+  .hidden{display:none !important;}
+  .back-link{
+    display:inline-flex; align-items:center; gap:4px; font-size:13px; color:var(--ink-soft);
+    cursor:pointer; margin:16px 0 4px; user-select:none;
+  }
+  .back-link:hover{color:var(--ink);}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <b>英文单词错题本</b>
+      <span>20-DAY FORGETTING CURVE</span>
+    </div>
+    <a class="back" href="index.html">← 返回专练首页</a>
+  </div>
+</header>
+
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var LS_KEY = 'p6vocab_words_v1';
+  // Review checkpoints, in days since the word's cycle-start date.
+  // Spans a 20-day cycle, spacing loosely modelled on the Ebbinghaus forgetting curve.
+  var CHECKPOINTS = [1, 2, 4, 7, 11, 15, 20];
+  var CYCLE_LENGTH = 20;
+
+  function todayStr(){
+    var d = new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function addDays(dateStr, days){
+    var d = new Date(dateStr+'T00:00:00');
+    d.setDate(d.getDate()+days);
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function daysBetween(a, b){
+    var da = new Date(a+'T00:00:00'), db = new Date(b+'T00:00:00');
+    return Math.round((db-da)/86400000);
+  }
+
+  function loadWords(){
+    try{
+      var raw = localStorage.getItem(LS_KEY);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+  function saveWords(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(words)); }catch(e){} }
+
+  var words = loadWords();
+  var uidCounter = Date.now();
+  function newId(){ uidCounter += 1; return 'w'+uidCounter; }
+
+  function recompute(w){
+    // nextReviewAt derived from cycleStart + current checkpoint offset
+    if(w.mastered){ w.nextReviewAt = null; return; }
+    var idx = Math.min(w.checkpointIndex, CHECKPOINTS.length-1);
+    w.nextReviewAt = addDays(w.cycleStart, CHECKPOINTS[idx]);
+  }
+  words.forEach(recompute);
+
+  function isDue(w){
+    return !w.mastered && w.nextReviewAt && w.nextReviewAt <= todayStr();
+  }
+
+  function showToast(msg){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(showToast._tm);
+    showToast._tm = setTimeout(function(){ t.classList.remove('show'); }, 1700);
+  }
+
+  function escapeHtml(s){
+    return (s||'').replace(/[&<>"]/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+    });
+  }
+
+  var app = document.getElementById('app');
+  var route = {name:'home'};
+  var addFormMode = 'single'; // 'single' | 'bulk'
+
+  function go(r){ route = r; render(); window.scrollTo(0,0); }
+
+  function render(){
+    if(route.name === 'home') return renderHome();
+    if(route.name === 'review') return renderReview();
+  }
+
+  // ---------- HOME ----------
+  function renderHome(){
+    var dueList = words.filter(isDue);
+    var masteredCount = words.filter(function(w){ return w.mastered; }).length;
+    var activeCount = words.length - masteredCount;
+
+    var html = '';
+    html += '<h1 class="page-title">我的错词本</h1>';
+    html += '<p class="page-sub">按遗忘曲线规律安排复习：每个新词加入后，会在第 <b>1、2、4、7、11、15、20</b> 天各复习一次，全部通过即视为掌握；期间答"不记得"会重新从第 1 天开始计。</p>';
+
+    html += '<div class="stat-strip">'
+      + '<div class="stat-card due"><b>'+dueList.length+'</b><span>今日待复习</span></div>'
+      + '<div class="stat-card"><b>'+activeCount+'</b><span>复习中</span></div>'
+      + '<div class="stat-card mastered"><b>'+masteredCount+'</b><span>已掌握</span></div>'
+      + '</div>';
+
+    html += '<div class="action-row">';
+    if(dueList.length > 0){
+      html += '<button class="btn" id="startReviewBtn">开始今日复习（'+dueList.length+' 个）</button>';
+    } else {
+      html += '<button class="btn" disabled>今天没有需要复习的词啦</button>';
+    }
+    html += '<button class="btn secondary" id="toggleAddBtn">+ 添加新错词</button>';
+    html += '</div>';
+
+    html += '<div class="add-form" id="addForm">'
+      + '<h3>添加错词</h3>'
+      + '<div class="mode-toggle">'
+        + '<button data-mode="single" class="'+(addFormMode==='single'?'active':'')+'">单个添加</button>'
+        + '<button data-mode="bulk" class="'+(addFormMode==='bulk'?'active':'')+'">批量添加</button>'
+      + '</div>';
+
+    if(addFormMode === 'single'){
+      html += ''
+        + '<label>英文单词 / 短语</label>'
+        + '<input type="text" id="inpWord" placeholder="例如：persevere">'
+        + '<label>中文意思</label>'
+        + '<input type="text" id="inpMeaning" placeholder="例如：坚持不懈">'
+        + '<label>例句 / 备注（选填）</label>'
+        + '<textarea id="inpExample" placeholder="例如：She persevered despite the setbacks."></textarea>'
+        + '<button class="btn block" id="submitSingle">加入错题本</button>';
+    } else {
+      html += ''
+        + '<div class="bulk-hint">每行一个词，格式：<b>单词 — 中文意思 — 例句(选填)</b>，用"—"或","或制表符隔开都可以。</div>'
+        + '<textarea id="inpBulk" style="min-height:120px;" placeholder="persevere — 坚持不懈\nintimidating — 令人生畏的 — The tall man looked intimidating."></textarea>'
+        + '<button class="btn block" id="submitBulk">批量加入错题本</button>';
+    }
+    html += '</div>';
+
+    if(words.length === 0){
+      html += '<div class="empty-state"><span class="big">📔</span>错题本还是空的<br>点上面「+ 添加新错词」开始收集吧</div>';
+    } else {
+      var dueIds = {}; dueList.forEach(function(w){ dueIds[w.id]=true; });
+      var activeWords = words.filter(function(w){ return !w.mastered; })
+        .sort(function(a,b){ return (a.nextReviewAt||'') < (b.nextReviewAt||'') ? -1 : 1; });
+      var masteredWords = words.filter(function(w){ return w.mastered; });
+
+      if(activeWords.length){
+        html += '<div class="section-h">复习中（'+activeWords.length+'）</div>';
+        activeWords.forEach(function(w){ html += wordCardHtml(w, dueIds[w.id]); });
+      }
+      if(masteredWords.length){
+        html += '<div class="section-h">已掌握（'+masteredWords.length+'）</div>';
+        masteredWords.forEach(function(w){ html += wordCardHtml(w, false); });
+      }
+    }
+
+    app.innerHTML = html;
+    bindHomeEvents();
+  }
+
+  function wordCardHtml(w, due){
+    var cls = w.mastered ? 'mastered' : (due ? 'due' : '');
+    var dots = '';
+    for(var i=0;i<CHECKPOINTS.length;i++){
+      var dc = 'dot';
+      if(w.mastered || i < w.checkpointIndex) dc += ' filled';
+      else if(i === w.checkpointIndex) dc += ' current';
+      dots += '<span class="'+dc+'"></span>';
+    }
+    var countdownHtml;
+    if(w.mastered){
+      countdownHtml = '<span class="countdown-label mastered">✓ 已掌握</span>';
+    } else if(due){
+      countdownHtml = '<span class="countdown-label due">今天该复习了</span>';
+    } else {
+      var daysLeft = daysBetween(todayStr(), w.nextReviewAt);
+      countdownHtml = '<span class="countdown-label">'+daysLeft+' 天后复习（第'+CHECKPOINTS[w.checkpointIndex]+'天）</span>';
+    }
+    return '<div class="word-card '+cls+'" data-id="'+w.id+'">'
+      + '<div class="word-row">'
+        + '<div><div class="word-en">'+escapeHtml(w.word)+'</div><div class="word-zh">'+escapeHtml(w.meaning)+'</div>'
+        + (w.example ? '<div class="word-ex">'+escapeHtml(w.example)+'</div>' : '')
+        + '</div>'
+        + '<div class="word-actions"><button class="icon-btn" data-del="'+w.id+'">删除</button></div>'
+      + '</div>'
+      + '<div class="progress-row"><div class="dots">'+dots+'</div>'+countdownHtml+'</div>'
+      + '</div>';
+  }
+
+  function bindHomeEvents(){
+    var startBtn = document.getElementById('startReviewBtn');
+    if(startBtn) startBtn.onclick = function(){ go({name:'review', reset:true}); };
+
+    document.getElementById('toggleAddBtn').onclick = function(){
+      var f = document.getElementById('addForm');
+      f.classList.toggle('open');
+    };
+
+    Array.prototype.forEach.call(app.querySelectorAll('.mode-toggle button'), function(btn){
+      btn.onclick = function(){
+        addFormMode = btn.getAttribute('data-mode');
+        document.getElementById('addForm').classList.add('open');
+        renderHome();
+      };
+    });
+
+    var submitSingle = document.getElementById('submitSingle');
+    if(submitSingle){
+      submitSingle.onclick = function(){
+        var wordVal = document.getElementById('inpWord').value.trim();
+        var meaningVal = document.getElementById('inpMeaning').value.trim();
+        var exampleVal = document.getElementById('inpExample').value.trim();
+        if(!wordVal || !meaningVal){ showToast('请至少填写单词和中文意思'); return; }
+        addWord(wordVal, meaningVal, exampleVal);
+        showToast('已加入错题本：'+wordVal);
+        renderHome();
+        document.getElementById('addForm').classList.add('open');
+      };
+    }
+    var submitBulk = document.getElementById('submitBulk');
+    if(submitBulk){
+      submitBulk.onclick = function(){
+        var raw = document.getElementById('inpBulk').value;
+        var lines = raw.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
+        var count = 0;
+        lines.forEach(function(line){
+          var parts;
+          if(line.indexOf('—') !== -1){
+            parts = line.split('—');
+          } else if(line.indexOf('\t') !== -1){
+            parts = line.split('\t');
+          } else {
+            parts = line.split(',');
+          }
+          parts = parts.map(function(p){ return p.trim(); }).filter(Boolean);
+          if(parts.length >= 2){
+            addWord(parts[0], parts[1], parts[2] || '');
+            count++;
+          }
+        });
+        if(count === 0){ showToast('没有识别到有效的词条，请检查格式'); return; }
+        showToast('已批量加入 '+count+' 个词');
+        renderHome();
+        document.getElementById('addForm').classList.add('open');
+      };
+    }
+
+    Array.prototype.forEach.call(app.querySelectorAll('[data-del]'), function(btn){
+      btn.onclick = function(e){
+        e.stopPropagation();
+        var id = btn.getAttribute('data-del');
+        words = words.filter(function(w){ return w.id !== id; });
+        saveWords();
+        renderHome();
+      };
+    });
+  }
+
+  function addWord(word, meaning, example){
+    var w = {
+      id: newId(),
+      word: word,
+      meaning: meaning,
+      example: example || '',
+      cycleStart: todayStr(),
+      checkpointIndex: 0,
+      mastered: false,
+      nextReviewAt: null
+    };
+    recompute(w);
+    words.push(w);
+    saveWords();
+  }
+
+  // ---------- REVIEW FLOW ----------
+  var reviewQueue = [];
+  var reviewIdx = 0;
+  var reviewRevealed = false;
+  var reviewResults = {advanced:0, mastered:0, reset:0};
+
+  function renderReview(){
+    if(route.reset){
+      reviewQueue = words.filter(isDue);
+      reviewIdx = 0;
+      reviewRevealed = false;
+      reviewResults = {advanced:0, mastered:0, reset:0};
+      route.reset = false;
+    }
+    if(reviewQueue.length === 0){
+      app.innerHTML = '<div class="empty-state"><span class="big">🎉</span>今天没有需要复习的词<br>去首页看看吧</div>'
+        + '<div class="action-row"><button class="btn" id="backHomeBtn">返回首页</button></div>';
+      document.getElementById('backHomeBtn').onclick = function(){ go({name:'home'}); };
+      return;
+    }
+    if(reviewIdx >= reviewQueue.length){
+      app.innerHTML = '<div class="empty-state"><span class="big">✅</span>今日复习完成！<br>'
+        + '巩固 +1：'+reviewResults.advanced+' 个　已掌握：'+reviewResults.mastered+' 个　重新开始：'+reviewResults.reset+' 个</div>'
+        + '<div class="action-row"><button class="btn" id="backHomeBtn">返回首页</button></div>';
+      document.getElementById('backHomeBtn').onclick = function(){ go({name:'home'}); };
+      return;
+    }
+
+    var w = reviewQueue[reviewIdx];
+    var html = '<div class="back-link" id="backHome">← 返回首页</div>';
+    html += '<div class="flash-wrap">';
+    html += '<div class="flash-progress">第 '+(reviewIdx+1)+' / '+reviewQueue.length+' 个</div>';
+    html += '<div class="flashcard" id="flashcard">';
+    html += '<div class="flash-en">'+escapeHtml(w.word)+'</div>';
+    if(!reviewRevealed){
+      html += '<div class="flash-hint">点击卡片查看释义</div>';
+    } else {
+      html += '<div class="flash-zh">'+escapeHtml(w.meaning)+'</div>';
+      if(w.example) html += '<div class="flash-ex">'+escapeHtml(w.example)+'</div>';
+    }
+    html += '</div>';
+    if(reviewRevealed){
+      html += '<div class="flash-buttons">'
+        + '<button class="btn-forgot" id="btnForgot">✗ 不记得</button>'
+        + '<button class="btn-remember" id="btnRemember">✓ 记得</button>'
+        + '</div>';
+    }
+    html += '</div>';
+    app.innerHTML = html;
+
+    document.getElementById('backHome').onclick = function(){ go({name:'home'}); };
+    document.getElementById('flashcard').onclick = function(){
+      if(!reviewRevealed){ reviewRevealed = true; renderReview(); }
+    };
+    var fb = document.getElementById('btnForgot');
+    var rb = document.getElementById('btnRemember');
+    if(fb) fb.onclick = function(e){ e.stopPropagation(); answerReview(w, false); };
+    if(rb) rb.onclick = function(e){ e.stopPropagation(); answerReview(w, true); };
+  }
+
+  function answerReview(w, remembered){
+    if(remembered){
+      w.checkpointIndex += 1;
+      if(w.checkpointIndex >= CHECKPOINTS.length){
+        w.mastered = true;
+        reviewResults.mastered++;
+      } else {
+        reviewResults.advanced++;
+      }
+    } else {
+      w.cycleStart = todayStr();
+      w.checkpointIndex = 0;
+      w.mastered = false;
+      reviewResults.reset++;
+    }
+    recompute(w);
+    saveWords();
+    reviewIdx++;
+    reviewRevealed = false;
+    renderReview();
+  }
+
+  // init
+  go({name:'home'});
+})();
+</script>
+</body>
+</html>
