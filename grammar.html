@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>英文语法错题本 · 间隔复习</title>
+<style>
+  :root{
+    --paper:#FAF6EC;
+    --paper-shadow:#EDE6D3;
+    --ink:#242422;
+    --ink-soft:#5b564a;
+    --rule:#d8cfb6;
+    --red:#B5312C;
+    --red-soft:#e7d4d1;
+    --green:#3f6b4a;
+    --green-soft:#dbe6dc;
+    --gold:#a9822f;
+    --blue:#2f5fa8;
+    --blue-soft:#dbe4f0;
+    --card-shadow: 0 2px 0 rgba(36,36,34,0.06), 0 10px 24px -14px rgba(36,36,34,0.35);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 700px at 10% -10%, #fffdf6 0%, var(--paper) 45%),
+      var(--paper);
+    color:var(--ink);
+    font-family: "Source Serif 4","Noto Serif SC","Songti SC", Georgia, "Times New Roman", serif;
+    min-height:100vh;
+    padding-bottom:64px;
+  }
+  .wrap{max-width:720px; margin:0 auto; padding:0 16px;}
+
+  header.top{
+    position:sticky; top:0; z-index:20;
+    background:rgba(250,246,236,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--rule);
+  }
+  .top-inner{
+    max-width:720px;margin:0 auto;padding:12px 16px;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+  .brand{display:flex; flex-direction:column; line-height:1.15;}
+  .brand b{font-size:16px; letter-spacing:.5px;}
+  .brand span{font-size:11px; color:var(--ink-soft); font-family:Georgia,serif; letter-spacing:1px;}
+  .top-inner a.back{
+    font-size:12.5px; color:var(--ink-soft); text-decoration:none; border:1px solid var(--rule);
+    background:#fff8ea; padding:6px 12px; border-radius:999px; white-space:nowrap;
+  }
+  .top-inner a.back:hover{color:var(--ink); border-color:var(--gold);}
+
+  h1.page-title{font-size:20px; margin:22px 0 4px; letter-spacing:.3px;}
+  p.page-sub{color:var(--ink-soft); font-size:13.5px; margin:0 0 14px; line-height:1.7;}
+
+  .exam-banner{
+    background:#fff8ea; border:1px dashed var(--gold); border-radius:3px;
+    padding:9px 12px; font-size:12.5px; color:var(--ink-soft); margin-bottom:18px; text-align:center;
+  }
+  .exam-banner b{color:var(--red);}
+
+  /* ---- dashboard stat strip ---- */
+  .stat-strip{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:18px;}
+  .stat-card{
+    background:#fffef9; border:1px solid var(--rule); border-radius:3px; box-shadow:var(--card-shadow);
+    padding:14px 10px; text-align:center;
+  }
+  .stat-card b{display:block; font-size:22px; font-family:Georgia,serif; color:var(--ink);}
+  .stat-card span{font-size:11.5px; color:var(--ink-soft);}
+  .stat-card.due b{color:var(--red);}
+  .stat-card.mastered b{color:var(--green);}
+
+  .action-row{display:flex; gap:10px; margin:6px 0 10px; flex-wrap:wrap;}
+  .btn{
+    font-family:"Noto Serif SC",serif; font-size:14px; padding:11px 20px; border-radius:3px;
+    border:1px solid var(--ink); background:var(--ink); color:var(--paper); cursor:pointer;
+  }
+  .btn.secondary{background:transparent; color:var(--ink); border:1px solid var(--rule);}
+  .btn.cram{background:transparent; color:var(--blue); border:1px solid var(--blue);}
+  .btn:disabled{opacity:.4; cursor:not-allowed;}
+  .btn.block{display:block; width:100%; text-align:center;}
+
+  .schedule-note{
+    font-size:11.5px; color:var(--ink-soft); background:#fff8ea; border:1px dashed var(--rule);
+    border-radius:3px; padding:10px 12px; margin-bottom:20px; line-height:1.7;
+  }
+  .schedule-note b{color:var(--gold);}
+
+  /* ---- category groups ---- */
+  details.cat-group{
+    background:#fffef9; border:1px solid var(--rule); border-radius:3px; box-shadow:var(--card-shadow);
+    margin-bottom:12px; overflow:hidden;
+  }
+  details.cat-group > summary{
+    list-style:none; cursor:pointer; padding:13px 16px; font-size:14.5px; font-weight:600;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  details.cat-group > summary::-webkit-details-marker{display:none;}
+  details.cat-group > summary .meta{font-size:11.5px; color:var(--ink-soft); font-weight:400;}
+  details.cat-group > summary::after{content:'▾'; color:var(--gold); margin-left:8px;}
+  details.cat-group[open] > summary::after{content:'▴';}
+  .cat-body{padding:0 14px 14px;}
+
+  /* ---- question list card (home view, collapsed sentence) ---- */
+  .q-card{
+    border-top:1px solid var(--rule); padding:12px 2px; position:relative;
+  }
+  .q-card:first-child{border-top:none;}
+  .q-card.due .q-sentence{color:var(--red);}
+  .q-sentence{font-size:14px; line-height:1.7;}
+  .q-sentence .blank{color:var(--gold); font-weight:600;}
+  .progress-row{display:flex; align-items:center; gap:8px; margin-top:8px;}
+  .dots{display:flex; gap:4px;}
+  .dot{width:8px; height:8px; border-radius:50%; background:var(--rule);}
+  .dot.filled{background:var(--gold);}
+  .dot.current{background:var(--red); box-shadow:0 0 0 2px var(--red-soft);}
+  .countdown-label{font-size:11.5px; color:var(--ink-soft); margin-left:auto; white-space:nowrap;}
+  .countdown-label.due{color:var(--red); font-weight:600;}
+  .countdown-label.mastered{color:var(--green); font-weight:600;}
+
+  .empty-state{
+    text-align:center; padding:50px 20px; color:var(--ink-soft); font-size:14px; line-height:1.8;
+  }
+  .empty-state .big{font-size:34px; display:block; margin-bottom:10px;}
+
+  /* ---- review question card ---- */
+  .review-wrap{display:flex; flex-direction:column; align-items:center; padding:20px 4px 10px;}
+  .review-progress{font-size:12px; color:var(--ink-soft); margin-bottom:6px; font-family:Georgia,serif; letter-spacing:1px;}
+  .review-cat{font-size:11px; color:var(--gold); letter-spacing:1.5px; text-transform:uppercase; margin-bottom:14px;}
+  .q-panel{
+    width:100%; max-width:480px; background:#fffef9; border:1px solid var(--rule);
+    border-radius:4px; box-shadow:var(--card-shadow); padding:26px 22px; position:relative;
+  }
+  .q-panel::before{
+    content:""; position:absolute; left:0; right:0; top:0; height:5px;
+    background:repeating-linear-gradient(90deg, var(--gold) 0 14px, transparent 14px 22px);
+    opacity:.35; border-radius:4px 4px 0 0;
+  }
+  .q-panel .sentence{font-size:17px; line-height:1.8; margin-bottom:20px;}
+  .q-panel .sentence .blank-slot{
+    display:inline-block; min-width:70px; border-bottom:2px dashed var(--gold); text-align:center;
+  }
+  .opt-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .opt-btn{
+    font-family:"Noto Serif SC",serif, Georgia; font-size:14.5px; padding:12px 10px; border-radius:4px;
+    border:1px solid var(--rule); background:#fff8ea; color:var(--ink); cursor:pointer; text-align:center;
+  }
+  .opt-btn:hover:not(:disabled){border-color:var(--gold);}
+  .opt-btn:disabled{cursor:default;}
+  .opt-btn.correct{background:var(--green-soft); border-color:var(--green); color:var(--green); font-weight:600;}
+  .opt-btn.wrong{background:var(--red-soft); border-color:var(--red); color:var(--red); font-weight:600;}
+  .opt-btn.dim{opacity:.5;}
+  .feedback-note{
+    margin-top:18px; padding:12px 14px; border-radius:3px; font-size:13px; line-height:1.7;
+    background:#fff8ea; border:1px dashed var(--rule); color:var(--ink-soft);
+  }
+  .feedback-note b{color:var(--ink);}
+  .next-row{width:100%; max-width:480px; margin-top:18px;}
+
+  .toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:var(--paper); padding:9px 18px; border-radius:4px; font-size:13px;
+    box-shadow:0 8px 20px rgba(0,0,0,.25); z-index:50; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(-6px);}
+  .hidden{display:none !important;}
+  .back-link{
+    display:inline-flex; align-items:center; gap:4px; font-size:13px; color:var(--ink-soft);
+    cursor:pointer; margin:16px 0 4px; user-select:none;
+  }
+  .back-link:hover{color:var(--ink);}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <b>英文语法错题本</b>
+      <span>SPACED-REPETITION GRAMMAR REVIEW</span>
+    </div>
+    <a class="back" href="index.html">← 返回专练首页</a>
+  </div>
+</header>
+
+<div class="wrap" id="app"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var LS_KEY = 'p6grammar_progress_v1';
+  // Review checkpoints, in days since the question's cycle-start date.
+  // A wrong answer at ANY point resets the whole cycle back to day 0.
+  // Requires 4 consecutive correct answers (i.e. clearing all 4 checkpoints) to be mastered.
+  var CHECKPOINTS = [1, 2, 4, 7];
+  var EXAM_DATE = '2026-09-24';
+
+  var CATEGORY_LABELS = {
+    phrasal: '短语动词',
+    article: '冠词',
+    sva: '主谓一致',
+    tag: '附加疑问句',
+    irregular: '不规则动词',
+    fixed: '固定搭配',
+    comparative: '比较级 / 副词',
+    determiner: '限定词',
+    preposition: '介词搭配'
+  };
+  var CATEGORY_ORDER = ['sva','tag','phrasal','irregular','comparative','determiner','preposition','fixed','article'];
+
+  // ---------- SEED QUESTION BANK ----------
+  // To add more mistakes in future sessions: append objects here (or ask Claude to).
+  // sentence uses [[blank]] as the placeholder marker.
+  var SEED_QUESTIONS = [
+    { id:'sva-9', category:'sva',
+      sentence:"Neither of the pupils [[blank]] focusing hard during the test now.",
+      options:["is","are","was","were"], answer:"is",
+      note:"neither of + 复数名词，谓语动词仍用单数；now 提示现在时。" },
+    { id:'sva-10', category:'sva',
+      sentence:"None of the pupils [[blank]] focusing hard during the test earlier on.",
+      options:["is","are","was","were"], answer:"were",
+      note:"none of + 复数名词可接复数动词；earlier on 提示过去时。" },
+    { id:'sva-12', category:'sva',
+      sentence:"Either of the pupils [[blank]] focusing hard during the test earlier on.",
+      options:["is","are","was","were"], answer:"was",
+      note:"either of + 复数名词，谓语动词用单数；earlier on 提示过去时。" },
+    { id:'sva-13', category:'sva',
+      sentence:"All the equipment [[blank]] new. Be careful!",
+      options:["is","are","was","were"], answer:"is",
+      note:"equipment 是不可数名词，恒用单数动词；此句为现在时。" },
+    { id:'sva-14', category:'sva',
+      sentence:"The police [[blank]] alerted of the case. Let's see if the robber manages to get away.",
+      options:["is","are","was","were"], answer:"are",
+      note:"police 恒表复数概念（警方/警员们），谓语恒用复数；此句为现在时。" },
+    { id:'sva-40', category:'sva',
+      sentence:"A number of cars [[blank]] recalled due to some defects a fortnight ago.",
+      options:["is","are","was","were"], answer:"were",
+      note:"a number of + 复数名词，谓语用复数；a fortnight ago 提示过去时。" },
+    { id:'sva-42', category:'sva',
+      sentence:"Two dollars and twenty cents [[blank]] considered a lot to the poor. Look at how helpless they are.",
+      options:["is","are","was","were"], answer:"is",
+      note:"表示金额的数字作为一个整体看待时视为单数；此句为现在时。" },
+    { id:'sva-90', category:'sva',
+      sentence:"All the luggage [[blank]] bulky. Be careful not to hurt yourself.",
+      options:["is","are","was","were"], answer:"is",
+      note:"luggage 是不可数名词，恒用单数动词；此句为现在时。" },
+    { id:'tag-64', category:'tag',
+      sentence:"Roy has a new pet, [[blank]] he?",
+      options:["hasn't","doesn't","does"], answer:"doesn't",
+      note:"这里的 has 是实义动词（表示拥有），附加疑问句要借助助动词 does/doesn't，不能直接把 has 变成 hasn't。" },
+    { id:'tag-67', category:'tag',
+      sentence:"Roy hardly cooked, [[blank]] he?",
+      options:["hadn't","didn't","did"], answer:"did",
+      note:"hardly 本身已带有否定意味，主句视为肯定句，附加疑问句要用肯定形式 did。" },
+    { id:'tag-68', category:'tag',
+      sentence:"Stop it, [[blank]] you?",
+      options:["would","will"], answer:"will",
+      note:"祈使句的附加疑问句常用 will you。" },
+    { id:'tag-69', category:'tag',
+      sentence:"I am cute, [[blank]] I?",
+      options:["am","aren't"], answer:"aren't",
+      note:"\"I am\" 的附加疑问句固定用 aren't I，而不是 am I not。" },
+    { id:'tag-72', category:'tag',
+      sentence:"He'd brought it, [[blank]] he?",
+      options:["aren't","had","hadn't"], answer:"hadn't",
+      note:"He'd = He had（过去完成时），附加疑问句要用 hadn't。" },
+    { id:'tag-75', category:'tag',
+      sentence:"He'll cry, [[blank]] he?",
+      options:["wouldn't","won't"], answer:"won't",
+      note:"He'll = He will，附加疑问句要用 won't。" },
+    { id:'phrasal-98', category:'phrasal',
+      sentence:"The government has stepped [[blank]] to help the poor.",
+      options:["out","in","up","back"], answer:"in",
+      note:"step in = 出面干预、介入帮忙。" },
+    { id:'phrasal-99', category:'phrasal',
+      sentence:"The government has stepped [[blank]] measures to help the poor.",
+      options:["out","in","up","back"], answer:"up",
+      note:"step up = 加强、加大力度（后面直接接名词 measures）。" },
+    { id:'phrasal-100', category:'phrasal',
+      sentence:"The government decided to step [[blank]] to assess the situation.",
+      options:["out","in","up","back"], answer:"back",
+      note:"step back = 退一步，重新审视/评估局势。" },
+    { id:'irregular-54', category:'irregular',
+      sentence:"The portrait is [[blank]] in the middle of the hall.",
+      options:["hang","hanged","hung","hanging"], answer:"hanging",
+      note:"现在进行时描述悬挂着的状态，用 hanging。" },
+    { id:'irregular-55', category:'irregular',
+      sentence:"The murderer was [[blank]] last night.",
+      options:["hang","hanged","hung","hanging"], answer:"hanged",
+      note:"表示「处以绞刑」这个特定意思时，过去分词用规则变化 hanged，而不是 hung（hung 用于物品悬挂）。" },
+    { id:'comparative-30', category:'comparative',
+      sentence:"Foxy behaves [[blank]] than Foxso.",
+      options:["crafty","craftier","more crafty","more craftily"], answer:"more craftily",
+      note:"behaves 是动词，要用副词修饰；craftily 的比较级是 more craftily。" },
+    { id:'comparative-31', category:'comparative',
+      sentence:"When the wind started blowing, the fire burnt [[blank]].",
+      options:["fiercer","fiercely","more fiercely","most fiercely"], answer:"fiercely",
+      note:"burnt 是动词，要用副词修饰；此处不是比较句，用原级 fiercely 即可。" },
+    { id:'determiner-24', category:'determiner',
+      sentence:"([[blank]]) students blamed each other for the mistake.",
+      options:["All","Both","Each","Every"], answer:"All",
+      note:"人数多于两人时用 All；如果原题明确是「两人」互相指责，则应选 Both——这一题请对照原图核实人数提示。" },
+    { id:'preposition-26', category:'preposition',
+      sentence:"I am disappointed [[blank]] your lying habits.",
+      options:["at","in","on","with"], answer:"with",
+      note:"disappointed with 表示因某人的行为、习惯而感到失望。" },
+    { id:'fixed-58', category:'fixed',
+      sentence:"Try as he [[blank]], Polly could not open the door.",
+      options:["could","ought","might","would"], answer:"might",
+      note:"固定搭配 try as... might，表示「尽管他try了/尽了力」。" },
+    { id:'article-85', category:'article',
+      sentence:"Let's take [[blank]] MRT train to town.",
+      options:["a","an"], answer:"an",
+      note:"MRT 读作字母音，以元音音 /ɛm/ 开头，所以前面用 an。" }
+  ];
+
+  function todayStr(){
+    var d = new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function addDays(dateStr, days){
+    var d = new Date(dateStr+'T00:00:00');
+    d.setDate(d.getDate()+days);
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function daysBetween(a, b){
+    var da = new Date(a+'T00:00:00'), db = new Date(b+'T00:00:00');
+    return Math.round((db-da)/86400000);
+  }
+
+  function loadProgress(){
+    try{
+      var raw = localStorage.getItem(LS_KEY);
+      return raw ? JSON.parse(raw) : {};
+    }catch(e){ return {}; }
+  }
+  function saveProgress(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(progress)); }catch(e){} }
+
+  var progress = loadProgress();
+
+  function ensureProgress(q){
+    if(!progress[q.id]){
+      progress[q.id] = { cycleStart: todayStr(), checkpointIndex: 0, mastered: false, nextReviewAt: null };
+      recompute(progress[q.id]);
+    }
+    return progress[q.id];
+  }
+  function recompute(p){
+    if(p.mastered){ p.nextReviewAt = null; return; }
+    var idx = Math.min(p.checkpointIndex, CHECKPOINTS.length-1);
+    p.nextReviewAt = addDays(p.cycleStart, CHECKPOINTS[idx]);
+  }
+
+  // merged view: question + its progress
+  var questions = SEED_QUESTIONS.map(function(q){
+    var p = ensureProgress(q);
+    return Object.assign({}, q, { _p: p });
+  });
+  saveProgress();
+
+  function isDue(item){
+    return !item._p.mastered && item._p.nextReviewAt && item._p.nextReviewAt <= todayStr();
+  }
+
+  function showToast(msg){
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(showToast._tm);
+    showToast._tm = setTimeout(function(){ t.classList.remove('show'); }, 1700);
+  }
+
+  function escapeHtml(s){
+    return (s||'').replace(/[&<>"]/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+    });
+  }
+  function sentenceWithBlank(sentence, filler){
+    return escapeHtml(sentence).replace('[[blank]]', filler);
+  }
+
+  var app = document.getElementById('app');
+  var route = {name:'home'};
+
+  function go(r){ route = r; render(); window.scrollTo(0,0); }
+
+  function render(){
+    if(route.name === 'home') return renderHome();
+    if(route.name === 'review') return renderReview();
+  }
+
+  function examCountdownHtml(){
+    var days = daysBetween(todayStr(), EXAM_DATE);
+    if(days < 0) return '';
+    return '<div class="exam-banner">距离 9 月 24 日考试还有 <b>'+days+'</b> 天</div>';
+  }
+
+  // ---------- HOME ----------
+  function renderHome(){
+    var dueList = questions.filter(isDue);
+    var masteredCount = questions.filter(function(q){ return q._p.mastered; }).length;
+    var activeCount = questions.length - masteredCount;
+
+    var html = '';
+    html += '<h1 class="page-title">语法错题本</h1>';
+    html += '<p class="page-sub">每道题加入后，会在第 <b>1、2、4、7</b> 天各复习一次，连续 4 次答对即视为掌握；期间任何一次答错，都会整个重新从第 1 天开始计。</p>';
+    html += examCountdownHtml();
+
+    html += '<div class="stat-strip">'
+      + '<div class="stat-card due"><b>'+dueList.length+'</b><span>今日待复习</span></div>'
+      + '<div class="stat-card"><b>'+activeCount+'</b><span>复习中</span></div>'
+      + '<div class="stat-card mastered"><b>'+masteredCount+'</b><span>已掌握</span></div>'
+      + '</div>';
+
+    html += '<div class="action-row">';
+    if(dueList.length > 0){
+      html += '<button class="btn" id="startReviewBtn">开始今日复习（'+dueList.length+' 题）</button>';
+    } else {
+      html += '<button class="btn" disabled>今天没有需要复习的题啦</button>';
+    }
+    if(activeCount > 0){
+      html += '<button class="btn cram" id="startCramBtn">考前总复习（'+activeCount+' 题，不看日期）</button>';
+    }
+    html += '</div>';
+    html += '<div class="schedule-note"><b>考前总复习</b>会把所有还没掌握的题目（不管是不是今天该复习）都拿出来再考一遍，答对照常推进进度，答错照常清零重来——适合考试前几天想集中再练一轮的时候用。</div>';
+
+    if(questions.length === 0){
+      html += '<div class="empty-state"><span class="big">📔</span>题库还是空的</div>';
+    } else {
+      CATEGORY_ORDER.forEach(function(cat){
+        var items = questions.filter(function(q){ return q.category === cat; });
+        if(!items.length) return;
+        var dueInCat = items.filter(isDue).length;
+        var masteredInCat = items.filter(function(q){ return q._p.mastered; }).length;
+        html += '<details class="cat-group"'+(dueInCat>0?' open':'')+'>';
+        html += '<summary><span>'+CATEGORY_LABELS[cat]+'（'+items.length+'）</span>'
+          + '<span class="meta">'+(dueInCat?dueInCat+' 待复习 · ':'')+masteredInCat+' 已掌握</span></summary>';
+        html += '<div class="cat-body">';
+        items.forEach(function(q){ html += qCardHtml(q); });
+        html += '</div></details>';
+      });
+    }
+
+    app.innerHTML = html;
+    bindHomeEvents();
+  }
+
+  function qCardHtml(q){
+    var p = q._p;
+    var due = isDue(q);
+    var dots = '';
+    for(var i=0;i<CHECKPOINTS.length;i++){
+      var dc = 'dot';
+      if(p.mastered || i < p.checkpointIndex) dc += ' filled';
+      else if(i === p.checkpointIndex) dc += ' current';
+      dots += '<span class="'+dc+'"></span>';
+    }
+    var countdownHtml;
+    if(p.mastered){
+      countdownHtml = '<span class="countdown-label mastered">✓ 已掌握</span>';
+    } else if(due){
+      countdownHtml = '<span class="countdown-label due">今天该复习了</span>';
+    } else {
+      var daysLeft = daysBetween(todayStr(), p.nextReviewAt);
+      countdownHtml = '<span class="countdown-label">'+daysLeft+' 天后复习（第'+CHECKPOINTS[p.checkpointIndex]+'天）</span>';
+    }
+    var sentenceHtml = sentenceWithBlank(q.sentence, '<span class="blank">____</span>');
+    return '<div class="q-card '+(due?'due':'')+'">'
+      + '<div class="q-sentence">'+sentenceHtml+'</div>'
+      + '<div class="progress-row"><div class="dots">'+dots+'</div>'+countdownHtml+'</div>'
+      + '</div>';
+  }
+
+  function bindHomeEvents(){
+    var startBtn = document.getElementById('startReviewBtn');
+    if(startBtn) startBtn.onclick = function(){ go({name:'review', mode:'due', reset:true}); };
+    var cramBtn = document.getElementById('startCramBtn');
+    if(cramBtn) cramBtn.onclick = function(){ go({name:'review', mode:'cram', reset:true}); };
+  }
+
+  // ---------- REVIEW FLOW ----------
+  var reviewQueue = [];
+  var reviewIdx = 0;
+  var reviewAnswered = false;
+  var reviewResults = {advanced:0, mastered:0, reset:0};
+
+  function renderReview(){
+    if(route.reset){
+      if(route.mode === 'cram'){
+        reviewQueue = questions.filter(function(q){ return !q._p.mastered; });
+      } else {
+        reviewQueue = questions.filter(isDue);
+      }
+      // shuffle lightly so the same category doesn't always come first
+      reviewQueue = reviewQueue.slice().sort(function(){ return Math.random()-0.5; });
+      reviewIdx = 0;
+      reviewAnswered = false;
+      reviewResults = {advanced:0, mastered:0, reset:0};
+      route.reset = false;
+    }
+    if(reviewQueue.length === 0){
+      app.innerHTML = '<div class="empty-state"><span class="big">🎉</span>没有需要复习的题<br>去首页看看吧</div>'
+        + '<div class="action-row"><button class="btn" id="backHomeBtn">返回首页</button></div>';
+      document.getElementById('backHomeBtn').onclick = function(){ go({name:'home'}); };
+      return;
+    }
+    if(reviewIdx >= reviewQueue.length){
+      app.innerHTML = '<div class="empty-state"><span class="big">✅</span>本轮复习完成！<br>'
+        + '进度推进：'+reviewResults.advanced+' 题　新掌握：'+reviewResults.mastered+' 题　重新开始：'+reviewResults.reset+' 题</div>'
+        + '<div class="action-row"><button class="btn" id="backHomeBtn">返回首页</button></div>';
+      document.getElementById('backHomeBtn').onclick = function(){ go({name:'home'}); };
+      return;
+    }
+
+    var q = reviewQueue[reviewIdx];
+    var html = '<div class="back-link" id="backHome">← 返回首页</div>';
+    html += '<div class="review-wrap">';
+    html += '<div class="review-progress">第 '+(reviewIdx+1)+' / '+reviewQueue.length+' 题'+(route.mode==='cram'?'　·　考前总复习':'')+'</div>';
+    html += '<div class="review-cat">'+CATEGORY_LABELS[q.category]+'</div>';
+    html += '<div class="q-panel">';
+    html += '<div class="sentence">'+sentenceWithBlank(q.sentence, '<span class="blank-slot">&nbsp;</span>')+'</div>';
+    html += '<div class="opt-grid" id="optGrid">';
+    q.options.forEach(function(opt, i){
+      html += '<button class="opt-btn" data-opt="'+i+'">'+escapeHtml(opt)+'</button>';
+    });
+    html += '</div>';
+    if(reviewAnswered){
+      html += '<div class="feedback-note"><b>解析：</b>'+escapeHtml(q.note)+'</div>';
+    }
+    html += '</div>';
+    if(reviewAnswered){
+      html += '<div class="next-row"><button class="btn block" id="nextBtn">下一题 →</button></div>';
+    }
+    html += '</div>';
+    app.innerHTML = html;
+
+    document.getElementById('backHome').onclick = function(){ go({name:'home'}); };
+
+    var buttons = app.querySelectorAll('.opt-btn');
+    if(reviewAnswered){
+      // re-render final state (in case of re-render after answering, e.g. window resize not relevant, but keep for safety)
+      Array.prototype.forEach.call(buttons, function(btn){
+        var i = parseInt(btn.getAttribute('data-opt'),10);
+        var opt = q.options[i];
+        btn.disabled = true;
+        if(opt === q.answer) btn.classList.add('correct');
+        else if(opt === q._chosenWrong) btn.classList.add('wrong');
+        else btn.classList.add('dim');
+      });
+      var nextBtn = document.getElementById('nextBtn');
+      if(nextBtn) nextBtn.onclick = function(){
+        reviewIdx++;
+        reviewAnswered = false;
+        renderReview();
+      };
+    } else {
+      Array.prototype.forEach.call(buttons, function(btn){
+        btn.onclick = function(){
+          var i = parseInt(btn.getAttribute('data-opt'),10);
+          var opt = q.options[i];
+          var correct = (opt === q.answer);
+          if(!correct) q._chosenWrong = opt;
+          reviewAnswered = true;
+          answerReview(q, correct);
+        };
+      });
+    }
+  }
+
+  function answerReview(q, correct){
+    var p = q._p;
+    if(correct){
+      p.checkpointIndex += 1;
+      if(p.checkpointIndex >= CHECKPOINTS.length){
+        p.mastered = true;
+        reviewResults.mastered++;
+      } else {
+        reviewResults.advanced++;
+      }
+    } else {
+      p.cycleStart = todayStr();
+      p.checkpointIndex = 0;
+      p.mastered = false;
+      reviewResults.reset++;
+    }
+    recompute(p);
+    saveProgress();
+    renderReview();
+  }
+
+  // init
+  go({name:'home'});
+})();
+</script>
+</body>
+</html>
