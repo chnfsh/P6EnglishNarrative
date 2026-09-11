@@ -349,6 +349,7 @@
   var route = {name:'home'};
   var addFormMode = 'single'; // 'single' | 'bulk'
   var addFormTier = 'test'; // 'test' (full spelling review) | 'familiar' (recognize-only, skips spelling review)
+  var addFormOpen = false;
 
   function go(r){ route = r; render(); window.scrollTo(0,0); }
 
@@ -400,7 +401,7 @@
       html += '<div class="schedule-note">⚠️ 这台设备/浏览器不支持语音朗读功能，涉及"播放读音"的复习方式会自动改为凭拼写记忆完成，不影响其他功能。</div>';
     }
 
-    html += '<div class="add-form" id="addForm">'
+    html += '<div class="add-form'+(addFormOpen?' open':'')+'" id="addForm">'
       + '<h3>添加错词</h3>'
       + '<div class="mode-toggle">'
         + '<button data-mode="single" class="'+(addFormMode==='single'?'active':'')+'">单个添加</button>'
@@ -485,7 +486,10 @@
         + '<div class="word-zh">'+escapeHtml(w.meaning)+'</div>'
         + (w.example ? '<div class="word-ex">'+escapeHtml(w.example)+'</div>' : '')
         + '</div>'
-        + '<div class="word-actions"><button class="icon-btn" data-del="'+w.id+'">删除</button></div>'
+        + '<div class="word-actions">'
+          + (SPEECH_SUPPORTED ? '<button class="icon-btn" data-speak="'+w.id+'">🔊</button>' : '')
+          + '<button class="icon-btn" data-del="'+w.id+'">删除</button>'
+        + '</div>'
       + '</div>'
       + '<div class="progress-row"><div class="dots">'+dots+'</div>'+countdownHtml+'</div>'
       + '</div>';
@@ -515,21 +519,21 @@
     if(cramBtn) cramBtn.onclick = function(){ go({name:'review', mode:'cram', reset:true}); };
 
     document.getElementById('toggleAddBtn').onclick = function(){
-      var f = document.getElementById('addForm');
-      f.classList.toggle('open');
+      addFormOpen = !addFormOpen;
+      renderHome();
     };
 
     Array.prototype.forEach.call(app.querySelectorAll('.mode-toggle button'), function(btn){
       btn.onclick = function(){
         addFormMode = btn.getAttribute('data-mode');
-        document.getElementById('addForm').classList.add('open');
+        addFormOpen = true;
         renderHome();
       };
     });
     Array.prototype.forEach.call(app.querySelectorAll('.tier-toggle button'), function(btn){
       btn.onclick = function(){
         addFormTier = btn.getAttribute('data-tier');
-        document.getElementById('addForm').classList.add('open');
+        addFormOpen = true;
         renderHome();
       };
     });
@@ -544,8 +548,8 @@
         if(!wordVal || !meaningVal){ showToast('请至少填写单词和中文意思'); return; }
         addWord(wordVal, ipaVal, meaningVal, exampleVal, addFormTier);
         showToast('已加入：'+wordVal);
+        addFormOpen = true;
         renderHome();
-        document.getElementById('addForm').classList.add('open');
       };
     }
     var submitBulk = document.getElementById('submitBulk');
@@ -579,8 +583,8 @@
         });
         if(count === 0){ showToast('没有识别到有效的词条，请检查格式'); return; }
         showToast('已批量加入 '+count+' 个词');
+        addFormOpen = true;
         renderHome();
-        document.getElementById('addForm').classList.add('open');
       };
     }
 
