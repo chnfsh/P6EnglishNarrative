@@ -374,7 +374,7 @@
 
     var html = '';
     html += '<h1 class="page-title">我的错词本</h1>';
-    html += '<p class="page-sub">每个新词加入后，会在第 <b>1、2、4、7、11、15</b> 天各默写一次，方式逐次升级：①看词+读音后隐去，露出首尾字母默写中间 ②看词+读音后隐去，整词默写 ③只听读音默写 ④只看音标默写 ⑤⑥随机抽一种方式再考——连续 6 次全部拼对才算掌握；期间任何一次拼错，都会整个重新从第 1 次开始计。标为"仅熟悉"的词不进入默写复习，只在词表里随时查看。</p>';
+    html += '<p class="page-sub">每个新词加入后，会在第 <b>1、2、4、7、11、15</b> 天各默写一次，方式逐次升级：①看词+读音后隐去，露出首尾字母默写中间 ②看词+读音后隐去，整词默写 ③只听读音默写 ④只看音标默写 ⑤⑥随机抽①②③④中的一种再考——连续 6 次全部拼对才算掌握；期间任何一次拼错，都会整个重新从第 1 次开始计。标为"仅熟悉"的词不进入默写复习，只在词表里随时查看。</p>';
     html += examCountdownHtml();
 
     html += '<div class="stat-strip">'
@@ -643,7 +643,9 @@
   }
 
   // ---------- SPELLING HELPERS ----------
-  var LETTER_METHODS = ['audio', 'phonetic', 'blank', 'partial'];
+  // Rounds 5 & 6 ("random") pick among the same four methods as rounds 1-4
+  // (①partial ②blank ③audio ④phonetic), each keeping its own preview rule —
+  // see pickRoundMethod below.
 
   function buildSkeleton(word){
     var tokens = word.split(' ');
@@ -668,14 +670,19 @@
     if(plannedStep === 'preview+blank') return {showPreview:true, method:'blank'};
     if(plannedStep === 'audio') return {showPreview:false, method: (SPEECH_SUPPORTED ? 'audio' : 'blank')};
     if(plannedStep === 'phonetic') return {showPreview:false, method: (w.ipa ? 'phonetic' : (SPEECH_SUPPORTED ? 'audio' : 'blank'))};
-    // random
-    var pool = LETTER_METHODS.filter(function(m){
+    // random (rounds 5 & 6): pick among the same four methods used in rounds 1-4 (①partial ②blank
+    // ③audio ④phonetic). Crucially, each method keeps the SAME preview rule it has everywhere else:
+    // ①/② (partial/blank) always show the word+audio+meaning first, then hide it — they are never
+    // sprung as a cold, zero-cue guess. ③/④ (audio/phonetic) stay preview-free, as they already are
+    // in rounds 3-4.
+    var pool = ['partial', 'blank', 'audio', 'phonetic'].filter(function(m){
       if(m === 'audio') return SPEECH_SUPPORTED;
       if(m === 'phonetic') return !!w.ipa;
       return true;
     });
     var m = pool[Math.floor(Math.random()*pool.length)];
-    return {showPreview:false, method:m};
+    var showPreview = (m === 'partial' || m === 'blank');
+    return {showPreview:showPreview, method:m};
   }
 
   // ---------- REVIEW FLOW ----------
