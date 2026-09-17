@@ -208,9 +208,11 @@
     fixed: '固定搭配',
     comparative: '比较级 / 副词',
     determiner: '限定词',
-    preposition: '介词搭配'
+    preposition: '介词搭配',
+    perception: '感官动词 + 宾语 + 原形动词',
+    pronoun: '人称代词（主格/宾格）'
   };
-  var CATEGORY_ORDER = ['sva','tag','phrasal','irregular','comparative','determiner','preposition','fixed','article'];
+  var CATEGORY_ORDER = ['sva','tag','phrasal','irregular','comparative','determiner','preposition','fixed','article','perception','pronoun'];
 
   // ---------- SEED QUESTION BANK ----------
   // To add more mistakes in future sessions: append objects here (or ask Claude to).
@@ -315,7 +317,27 @@
     { id:'article-85', category:'article',
       sentence:"Let's take [[blank]] MRT train to town.",
       options:["a","an"], answer:"an",
-      note:"MRT 读作字母音，以元音音 /ɛm/ 开头，所以前面用 an。" }
+      note:"MRT 读作字母音，以元音音 /ɛm/ 开头，所以前面用 an。" },
+    { id:'sva-19', category:'sva',
+      sentence:"Planting the seeds [[blank]] no easy task. She is perspiring in the hot sun.",
+      options:["is","are","was","were"], answer:"is",
+      note:"\"Planting the seeds\"是动名词短语作主语，视为单数；后一句\"is perspiring\"提示整段是现在时，所以选is。" },
+    { id:'sva-20', category:'sva',
+      sentence:"Drawing the cars and trucks [[blank]] chicken feed to Bob. He did it within minutes.",
+      options:["is","are","was","were"], answer:"was",
+      note:"\"Drawing the cars and trucks\"是动名词短语作主语，视为单数；后一句\"did it\"是过去时，所以选was。\"chicken feed\"是习语，表示「微不足道、很容易的事」。" },
+    { id:'perception-21', category:'perception',
+      sentence:"Last night, I saw Billy [[blank]] into the drain.",
+      options:["fall","falls","fell","fallen"], answer:"fall",
+      note:"感官动词see/saw + 宾语 + 动词原形，表示目睹了完整的动作过程，所以用原形fall，不能用fell/falls/fallen。" },
+    { id:'perception-22', category:'perception',
+      sentence:"Just now, I heard Pam [[blank]] sweetly.",
+      options:["sing","sings","sang","sung"], answer:"sing",
+      note:"感官动词hear/heard + 宾语 + 动词原形，同样用原形sing，不用sang/sung/sings。" },
+    { id:'pronoun-23', category:'pronoun',
+      sentence:"Tr Mel is taking Rayne and [[blank]] to the library.",
+      options:["I","me"], answer:"me",
+      note:"I/me在这里是动词taking的宾语（跟Rayne并列），宾语要用宾格me，不用主格I。" }
   ];
 
   function todayStr(){
