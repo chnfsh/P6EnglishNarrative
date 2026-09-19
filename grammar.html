@@ -168,6 +168,17 @@
   .err-input:focus{outline:none; border-color:var(--gold); background:#fbf3df;}
   .err-input.correct{border-color:var(--green); background:var(--green-soft); color:var(--green); font-weight:600;}
   .err-input.wrong{border-color:var(--red); background:var(--red-soft); color:var(--red); font-weight:600;}
+  .rewrite-original{font-size:14px; color:var(--ink-soft); line-height:1.7; margin-bottom:12px; text-align:left;}
+  .rewrite-hint{font-size:12.5px; color:var(--gold); margin-bottom:14px; text-align:left;}
+  .rewrite-hint b{font-family:Georgia,serif;}
+  .rewrite-input{
+    width:100%; min-height:70px; font-family:inherit; font-size:15px; padding:10px 12px;
+    border:1px solid var(--rule); border-radius:3px; background:#fff8ea; color:var(--ink);
+    resize:vertical; text-align:left;
+  }
+  .rewrite-input:focus{outline:none; border-color:var(--gold); background:#fbf3df;}
+  .rewrite-input.correct{border-color:var(--green); background:var(--green-soft); color:var(--green);}
+  .rewrite-input.wrong{border-color:var(--red); background:var(--red-soft); color:var(--red);}
   .feedback-note{
     margin-top:18px; padding:12px 14px; border-radius:3px; font-size:13px; line-height:1.7;
     background:#fff8ea; border:1px dashed var(--rule); color:var(--ink-soft);
@@ -227,9 +238,13 @@
     preposition: '介词搭配',
     perception: '感官动词 + 宾语 + 原形动词',
     pronoun: '人称代词（主格/宾格）',
-    correction: '改错题（拼写/语法）'
+    correction: '改错题（拼写/语法）',
+    synonym: '词义辨析（近义词选择）',
+    inversion: '倒装句',
+    connector: '逻辑连接词',
+    rewrite: '句子改写（句型转换）'
   };
-  var CATEGORY_ORDER = ['sva','tag','phrasal','irregular','comparative','determiner','preposition','fixed','article','perception','pronoun','correction'];
+  var CATEGORY_ORDER = ['sva','tag','phrasal','irregular','comparative','determiner','preposition','fixed','article','perception','pronoun','correction','synonym','inversion','connector','rewrite'];
 
   // ---------- SEED QUESTION BANK ----------
   // To add more mistakes in future sessions: append objects here (or ask Claude to).
@@ -386,7 +401,55 @@
     { id:'correction-8', category:'correction', type:'correction',
       sentence:"It is important for them to be briefed [[e1]] internet safety before interacting with AI.",
       blanks:[{wrong:"over", correct:["on","about"]}],
-      note:"固定搭配 briefed on/about（就……简要告知），on和about都可以，不用briefed over。" }
+      note:"固定搭配 briefed on/about（就……简要告知），on和about都可以，不用briefed over。" },
+    { id:'synonym-wolves-19', category:'synonym',
+      sentence:"Wolves work together to take down prey much larger than an individual wolf; prey that may otherwise [[blank]] them.",
+      options:["thwart","invade","escape","frustrate"], answer:"escape",
+      note:"elude表示「（成功）躲避、逃脱追捕」，与escape（逃脱）意思最接近。" },
+    { id:'synonym-stanley-17', category:'synonym',
+      sentence:"It had taken him months to [[blank]] a plan to escape and this was the right time to execute it.",
+      options:["devise","deduce","suggest","produce"], answer:"devise",
+      note:"come up with表示「想出、设计出（计划）」，与devise（设计，想出）意思最接近。" },
+    { id:'inversion-6', category:'inversion',
+      sentence:"Rarely [[blank]] a student present such a detailed argument in her essay.",
+      options:["do","has","does","have"], answer:"does",
+      note:"否定副词Rarely放在句首引起部分倒装；原句主语a student是第三人称单数、一般现在时，所以用does，后面的动词present用原形。" },
+    { id:'connector-9', category:'connector',
+      sentence:"[[blank]] his teacher's encouragement, Ryan submitted his writing to a national competition.",
+      options:["Despite","Giving rise to","As a result of","Regardless of"], answer:"As a result of",
+      note:"因为老师的鼓励，Ryan才投稿，是因果关系，要用表示「因为、由于」的As a result of，而不是表示「尽管」的Despite/Regardless of。" },
+    { id:'synonym-12', category:'synonym',
+      sentence:"[[blank]] her experience as a peer support leader, Kelly shared the importance of helping one another in times of need.",
+      options:["Enacting","Mentioning","Recounting","Commenting"], answer:"Recounting",
+      note:"Recounting表示「叙述，讲述（经历）」，符合分享自己经历的语境。" },
+    { id:'synonym-13', category:'synonym',
+      sentence:"The group [[blank]] Claire's ideas and agreed to decorate the classroom the way she suggested.",
+      options:["recited","echoed","reiterated","advocated"], answer:"echoed",
+      note:"echoed在这里表示「附和，呼应（某人的观点）」，符合大家赞同并采纳Claire建议的语境。" },
+    { id:'synonym-14', category:'synonym',
+      sentence:"Mark's father used a more [[blank]] approach, encouraging reflection and self-improvement rather than punishing him.",
+      options:["fragile","passive","delicate","nurturing"], answer:"nurturing",
+      note:"nurturing表示「培育性的，关怀式的」，符合「鼓励反思和自我提升而非惩罚」这种教育方式。" },
+    { id:'rewrite-61', category:'rewrite', type:'rewrite',
+      original:"Both my brothers dislike eating mushrooms.",
+      starterHint:"Neither of...",
+      correct:["Neither of my brothers likes eating mushrooms."],
+      note:"neither of + 复数名词，谓语动词用单数；neither本身已表示否定，所以dislike要改为肯定的likes。" },
+    { id:'rewrite-62', category:'rewrite', type:'rewrite',
+      original:"As soon as the principal walked onto the stage, the students greeted her.",
+      starterHint:"No sooner...",
+      correct:["No sooner had the principal walked onto the stage than the students greeted her."],
+      note:"no sooner...than句型：no sooner放句首要部分倒装，用had+过去分词；后半句用than连接，不能用after。" },
+    { id:'rewrite-64', category:'rewrite', type:'rewrite',
+      original:"Melvin can attend the football match. He must complete the work assigned by his teachers.",
+      starterHint:"...provided that...",
+      correct:["Melvin can attend the football match provided that he completes the work assigned by his teachers."],
+      note:"provided that（只要，条件是……）连接两个分句；条件句里must complete在这里改为一般现在时completes（第三人称单数）。" },
+    { id:'rewrite-65', category:'rewrite', type:'rewrite',
+      original:"\"Susan, where did you go for dinner yesterday?\" Mdm Layla asked.",
+      starterHint:"Mdm Layla asked Susan...",
+      correct:["Mdm Layla asked Susan where she had gone for dinner the previous day.","Mdm Layla asked Susan where she had gone for dinner the day before."],
+      note:"间接引语：疑问句变陈述语序（where she had gone），did go在转述时倒退为过去完成时had gone，yesterday倒退为the previous day/the day before。" }
   ];
 
   function todayStr(){
@@ -466,6 +529,9 @@
   function normalizeAnswer(s){
     return (s||'').trim().toLowerCase();
   }
+  function normalizeSentence(s){
+    return (s||'').trim().toLowerCase().replace(/\s+/g,' ').replace(/[.\s]+$/,'');
+  }
 
   var app = document.getElementById('app');
   var route = {name:'home'};
@@ -491,7 +557,7 @@
 
     var html = '';
     html += '<h1 class="page-title">语法错题本</h1>';
-    html += '<p class="page-sub">每道题加入后，会在第 <b>1、2、4、7</b> 天各复习一次，连续 4 次答对即视为掌握；期间任何一次答错，都会整个重新从第 1 天开始计。</p>';
+    html += '<p class="page-sub">每道题加入后，会在第 <b>1、2、4、7</b> 天各复习一次，连续 4 次答对即视为掌握；期间任何一次答错，都会整个重新从第 1 天开始计。题型包括选择题、改错题（拼写/语法）和句子改写题，混在一起随机抽考。</p>';
     html += examCountdownHtml();
 
     html += '<div class="stat-strip">'
@@ -552,9 +618,14 @@
       var daysLeft = daysBetween(todayStr(), p.nextReviewAt);
       countdownHtml = '<span class="countdown-label">'+daysLeft+' 天后复习（第'+CHECKPOINTS[p.checkpointIndex]+'天）</span>';
     }
-    var sentenceHtml = (q.type === 'correction')
-      ? sentenceWithErrorsHtml(q.sentence, q.blanks)
-      : sentenceWithBlank(q.sentence, '<span class="blank">____</span>');
+    var sentenceHtml;
+    if(q.type === 'correction'){
+      sentenceHtml = sentenceWithErrorsHtml(q.sentence, q.blanks);
+    } else if(q.type === 'rewrite'){
+      sentenceHtml = escapeHtml(q.original)+' <span style="color:var(--gold);">→ ('+escapeHtml(q.starterHint)+')</span>';
+    } else {
+      sentenceHtml = sentenceWithBlank(q.sentence, '<span class="blank">____</span>');
+    }
     return '<div class="q-card '+(due?'due':'')+'">'
       + '<div class="q-sentence">'+sentenceHtml+'</div>'
       + '<div class="progress-row"><div class="dots">'+dots+'</div>'+countdownHtml+'</div>'
@@ -626,6 +697,14 @@
           + '<input type="text" class="'+cls+'" data-idx="'+i+'" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="correct word" value="'+val+'" '+(reviewAnswered?'disabled':'')+'></div>';
       });
       html += '</div>';
+    } else if(qType === 'rewrite'){
+      var rewriteOk = null;
+      if(reviewAnswered){
+        rewriteOk = q.correct.map(normalizeSentence).indexOf(normalizeSentence(q._typed)) !== -1;
+      }
+      html += '<div class="rewrite-original">'+escapeHtml(q.original)+'</div>';
+      html += '<div class="rewrite-hint">Rewrite using: <b>'+escapeHtml(q.starterHint)+'</b>. Your answer must be in one sentence with the same meaning.</div>';
+      html += '<textarea class="rewrite-input'+(reviewAnswered?(rewriteOk?' correct':' wrong'):'')+'" id="rewriteInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Write your full sentence here" '+(reviewAnswered?'disabled':'')+'>'+(reviewAnswered?escapeHtml(q._typed||''):'')+'</textarea>';
     } else {
       html += '<div class="sentence">'+sentenceWithBlank(q.sentence, '<span class="blank-slot">&nbsp;</span>')+'</div>';
       html += '<div class="opt-grid" id="optGrid">';
@@ -636,10 +715,14 @@
     }
 
     if(reviewAnswered){
-      html += '<div class="feedback-note"><b>解析：</b>'+escapeHtml(q.note)+'</div>';
+      var feedbackExtra = '';
+      if(qType === 'rewrite'){
+        feedbackExtra = '<b>参考答案：</b>'+escapeHtml(q.correct[0])+'<br>';
+      }
+      html += '<div class="feedback-note">'+feedbackExtra+'<b>解析：</b>'+escapeHtml(q.note)+'</div>';
     }
     html += '</div>';
-    if(!reviewAnswered && qType === 'correction'){
+    if(!reviewAnswered && (qType === 'correction' || qType === 'rewrite')){
       html += '<div class="next-row"><button class="btn block" id="submitCorrectionBtn">提交</button></div>';
     }
     if(reviewAnswered){
@@ -669,6 +752,27 @@
       }
       var nextBtn = document.getElementById('nextBtn');
       if(nextBtn) nextBtn.onclick = function(){
+        reviewIdx++;
+        reviewAnswered = false;
+        renderReview();
+      };
+      return;
+    }
+
+    if(qType === 'rewrite'){
+      var submitBtn2 = document.getElementById('submitCorrectionBtn');
+      if(submitBtn2){
+        submitBtn2.onclick = function(){
+          var inp = document.getElementById('rewriteInput');
+          var typed = inp ? inp.value : '';
+          q._typed = typed;
+          var correct = q.correct.map(normalizeSentence).indexOf(normalizeSentence(typed)) !== -1;
+          reviewAnswered = true;
+          answerReview(q, correct);
+        };
+      }
+      var nextBtnR = document.getElementById('nextBtn');
+      if(nextBtnR) nextBtnR.onclick = function(){
         reviewIdx++;
         reviewAnswered = false;
         renderReview();
