@@ -152,6 +152,22 @@
   .opt-btn.correct{background:var(--green-soft); border-color:var(--green); color:var(--green); font-weight:600;}
   .opt-btn.wrong{background:var(--red-soft); border-color:var(--red); color:var(--red); font-weight:600;}
   .opt-btn.dim{opacity:.5;}
+  .correction-instruction{
+    font-size:12.5px; color:var(--ink-soft); font-style:italic; margin-bottom:16px; line-height:1.6;
+    border-left:3px solid var(--gold); padding-left:10px; text-align:left;
+  }
+  .err-word{color:var(--red); text-decoration:underline; text-decoration-style:wavy; font-weight:600;}
+  .err-num{color:var(--gold); font-size:11px; margin-left:1px;}
+  .err-input-list{margin-top:18px; display:flex; flex-direction:column; gap:10px;}
+  .err-input-row{display:flex; align-items:center; gap:10px;}
+  .err-label{font-size:15px; color:var(--gold); flex-shrink:0; width:18px;}
+  .err-input{
+    flex:1; font-family:inherit; font-size:15px; padding:8px 10px; border:1px solid var(--rule);
+    border-radius:3px; background:#fff8ea; color:var(--ink);
+  }
+  .err-input:focus{outline:none; border-color:var(--gold); background:#fbf3df;}
+  .err-input.correct{border-color:var(--green); background:var(--green-soft); color:var(--green); font-weight:600;}
+  .err-input.wrong{border-color:var(--red); background:var(--red-soft); color:var(--red); font-weight:600;}
   .feedback-note{
     margin-top:18px; padding:12px 14px; border-radius:3px; font-size:13px; line-height:1.7;
     background:#fff8ea; border:1px dashed var(--rule); color:var(--ink-soft);
@@ -210,9 +226,10 @@
     determiner: '限定词',
     preposition: '介词搭配',
     perception: '感官动词 + 宾语 + 原形动词',
-    pronoun: '人称代词（主格/宾格）'
+    pronoun: '人称代词（主格/宾格）',
+    correction: '改错题（拼写/语法）'
   };
-  var CATEGORY_ORDER = ['sva','tag','phrasal','irregular','comparative','determiner','preposition','fixed','article','perception','pronoun'];
+  var CATEGORY_ORDER = ['sva','tag','phrasal','irregular','comparative','determiner','preposition','fixed','article','perception','pronoun','correction'];
 
   // ---------- SEED QUESTION BANK ----------
   // To add more mistakes in future sessions: append objects here (or ask Claude to).
@@ -337,7 +354,39 @@
     { id:'pronoun-23', category:'pronoun',
       sentence:"Tr Mel is taking Rayne and [[blank]] to the library.",
       options:["I","me"], answer:"me",
-      note:"I/me在这里是动词taking的宾语（跟Rayne并列），宾语要用宾格me，不用主格I。" }
+      note:"I/me在这里是动词taking的宾语（跟Rayne并列），宾语要用宾格me，不用主格I。" },
+    { id:'correction-1', category:'correction', type:'correction',
+      sentence:"The uncommon sighting flew just two kilometers above their home before blasting away into the night sky [[e1]] a incredible speed.",
+      blanks:[{wrong:"on", correct:["at"]}],
+      note:"固定搭配 at an incredible speed（以某种速度），要用介词at，不能用on。" },
+    { id:'correction-2', category:'correction', type:'correction',
+      sentence:"It marked the triumph of good over evil and light over darkness and is summed [[e1]] in the simple act of lighting an oil lamp.",
+      blanks:[{wrong:"over", correct:["up"]}],
+      note:"固定搭配 sum up（总结、概括），不是 sum over。" },
+    { id:'correction-3', category:'correction', type:'correction',
+      sentence:"Thus, she [[e1]] to have her son study in the countryside where he could have room around and he [[e2]] by nature.",
+      blanks:[{wrong:"opting", correct:["opted"]},{wrong:"intriged", correct:["intrigued"]}],
+      note:"①全句是过去时的叙述，主句需要限定动词，用过去式opted，而不是现在分词opting。②intriged是拼写错误，正确拼写是intrigued（被…吸引、着迷）。" },
+    { id:'correction-4', category:'correction', type:'correction',
+      sentence:"Kim can discover nature [[e1]] many ways which he finds [[e2]].",
+      blanks:[{wrong:"at", correct:["in"]},{wrong:"fasinating", correct:["fascinating"]}],
+      note:"①固定搭配 in many ways（在许多方面），不用at。②fasinating是拼写错误，正确拼写是fascinating（迷人的）。" },
+    { id:'correction-5', category:'correction', type:'correction',
+      sentence:"Perhaps, what revenge travel should be interpreted [[e1]] is taking revenge on the pandemic, or Covid itself.",
+      blanks:[{wrong:"in", correct:["as"]}],
+      note:"固定搭配 interpreted as（被理解为），不用interpreted in。" },
+    { id:'correction-6', category:'correction', type:'correction',
+      sentence:"I walked around the mansion, trying to peep into [[e1]] of the windows, but my attempts were [[e2]].",
+      blanks:[{wrong:"every", correct:["each"]},{wrong:"fewtile", correct:["futile"]}],
+      note:"①every不能直接接of，表示「每一个……中的」要用each of。②fewtile是拼写错误，正确拼写是futile（徒劳的，无效的）。" },
+    { id:'correction-7', category:'correction', type:'correction',
+      sentence:"I know that our parents would [[e1]] oppose the idea but they would never find out so long [[e2]] we do not tell them.",
+      blanks:[{wrong:"strong", correct:["strongly"]},{wrong:"if", correct:["as"]}],
+      note:"①修饰动词oppose需要用副词strongly，不用形容词strong。②固定搭配 so long as（只要），不是so long if。" },
+    { id:'correction-8', category:'correction', type:'correction',
+      sentence:"It is important for them to be briefed [[e1]] internet safety before interacting with AI.",
+      blanks:[{wrong:"over", correct:["on","about"]}],
+      note:"固定搭配 briefed on/about（就……简要告知），on和about都可以，不用briefed over。" }
   ];
 
   function todayStr(){
@@ -403,6 +452,19 @@
   }
   function sentenceWithBlank(sentence, filler){
     return escapeHtml(sentence).replace('[[blank]]', filler);
+  }
+  var CIRCLED_NUMS = ['①','②','③','④','⑤','⑥'];
+  function sentenceWithErrorsHtml(sentence, blanks){
+    var html = escapeHtml(sentence);
+    blanks.forEach(function(b, i){
+      var marker = '[[e'+(i+1)+']]';
+      var replacement = '<span class="err-word">'+escapeHtml(b.wrong)+'</span><sup class="err-num">'+(CIRCLED_NUMS[i]||('('+(i+1)+')'))+'</sup>';
+      html = html.split(marker).join(replacement);
+    });
+    return html;
+  }
+  function normalizeAnswer(s){
+    return (s||'').trim().toLowerCase();
   }
 
   var app = document.getElementById('app');
@@ -490,7 +552,9 @@
       var daysLeft = daysBetween(todayStr(), p.nextReviewAt);
       countdownHtml = '<span class="countdown-label">'+daysLeft+' 天后复习（第'+CHECKPOINTS[p.checkpointIndex]+'天）</span>';
     }
-    var sentenceHtml = sentenceWithBlank(q.sentence, '<span class="blank">____</span>');
+    var sentenceHtml = (q.type === 'correction')
+      ? sentenceWithErrorsHtml(q.sentence, q.blanks)
+      : sentenceWithBlank(q.sentence, '<span class="blank">____</span>');
     return '<div class="q-card '+(due?'due':'')+'">'
       + '<div class="q-sentence">'+sentenceHtml+'</div>'
       + '<div class="progress-row"><div class="dots">'+dots+'</div>'+countdownHtml+'</div>'
@@ -539,21 +603,45 @@
     }
 
     var q = reviewQueue[reviewIdx];
+    var qType = q.type || 'mcq';
     var html = '<div class="back-link" id="backHome">← 返回首页</div>';
     html += '<div class="review-wrap">';
     html += '<div class="review-progress">第 '+(reviewIdx+1)+' / '+reviewQueue.length+' 题'+(route.mode==='cram'?'　·　考前总复习':'')+'</div>';
     html += '<div class="review-cat">'+CATEGORY_LABELS[q.category]+'</div>';
     html += '<div class="q-panel">';
-    html += '<div class="sentence">'+sentenceWithBlank(q.sentence, '<span class="blank-slot">&nbsp;</span>')+'</div>';
-    html += '<div class="opt-grid" id="optGrid">';
-    q.options.forEach(function(opt, i){
-      html += '<button class="opt-btn" data-opt="'+i+'">'+escapeHtml(opt)+'</button>';
-    });
-    html += '</div>';
+
+    if(qType === 'correction'){
+      html += '<div class="correction-instruction">The underlined word(s) contain either a spelling or grammatical error. Write the correct word in each of the boxes.</div>';
+      html += '<div class="sentence">'+sentenceWithErrorsHtml(q.sentence, q.blanks)+'</div>';
+      html += '<div class="err-input-list" id="errInputList">';
+      q.blanks.forEach(function(b, i){
+        var cls = 'err-input';
+        if(reviewAnswered){
+          var typedVal = (q._typed && q._typed[i]) || '';
+          var ok = b.correct.map(normalizeAnswer).indexOf(normalizeAnswer(typedVal)) !== -1;
+          cls += ok ? ' correct' : ' wrong';
+        }
+        var val = reviewAnswered ? escapeHtml((q._typed && q._typed[i]) || '') : '';
+        html += '<div class="err-input-row"><span class="err-label">'+(CIRCLED_NUMS[i]||('('+(i+1)+')'))+'</span>'
+          + '<input type="text" class="'+cls+'" data-idx="'+i+'" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="correct word" value="'+val+'" '+(reviewAnswered?'disabled':'')+'></div>';
+      });
+      html += '</div>';
+    } else {
+      html += '<div class="sentence">'+sentenceWithBlank(q.sentence, '<span class="blank-slot">&nbsp;</span>')+'</div>';
+      html += '<div class="opt-grid" id="optGrid">';
+      q.options.forEach(function(opt, i){
+        html += '<button class="opt-btn" data-opt="'+i+'">'+escapeHtml(opt)+'</button>';
+      });
+      html += '</div>';
+    }
+
     if(reviewAnswered){
       html += '<div class="feedback-note"><b>解析：</b>'+escapeHtml(q.note)+'</div>';
     }
     html += '</div>';
+    if(!reviewAnswered && qType === 'correction'){
+      html += '<div class="next-row"><button class="btn block" id="submitCorrectionBtn">提交</button></div>';
+    }
     if(reviewAnswered){
       html += '<div class="next-row"><button class="btn block" id="nextBtn">下一题 →</button></div>';
     }
@@ -561,6 +649,32 @@
     app.innerHTML = html;
 
     document.getElementById('backHome').onclick = function(){ go({name:'home'}); };
+
+    if(qType === 'correction'){
+      var submitBtn = document.getElementById('submitCorrectionBtn');
+      if(submitBtn){
+        submitBtn.onclick = function(){
+          var inputs = app.querySelectorAll('.err-input');
+          var typed = [];
+          Array.prototype.forEach.call(inputs, function(inp){
+            typed[parseInt(inp.getAttribute('data-idx'),10)] = inp.value;
+          });
+          q._typed = typed;
+          var allCorrect = q.blanks.every(function(b, i){
+            return b.correct.map(normalizeAnswer).indexOf(normalizeAnswer(typed[i])) !== -1;
+          });
+          reviewAnswered = true;
+          answerReview(q, allCorrect);
+        };
+      }
+      var nextBtn = document.getElementById('nextBtn');
+      if(nextBtn) nextBtn.onclick = function(){
+        reviewIdx++;
+        reviewAnswered = false;
+        renderReview();
+      };
+      return;
+    }
 
     var buttons = app.querySelectorAll('.opt-btn');
     if(reviewAnswered){
@@ -573,8 +687,8 @@
         else if(opt === q._chosenWrong) btn.classList.add('wrong');
         else btn.classList.add('dim');
       });
-      var nextBtn = document.getElementById('nextBtn');
-      if(nextBtn) nextBtn.onclick = function(){
+      var nextBtn2 = document.getElementById('nextBtn');
+      if(nextBtn2) nextBtn2.onclick = function(){
         reviewIdx++;
         reviewAnswered = false;
         renderReview();
