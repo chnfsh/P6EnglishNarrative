@@ -149,6 +149,13 @@
     display:block; font-size:11.5px; color:var(--red); font-family:"Noto Serif SC",serif;
     margin-top:-2px; line-height:1.4;
   }
+  .mastered-word{color:var(--green); font-weight:600; border-bottom:1.6px dotted var(--green);}
+  .mastered-word .mw-check{font-size:10px; margin-left:1px;}
+  .curated-progress-row{display:flex; align-items:center; gap:8px; margin-top:10px;}
+  .curated-dots{display:flex; gap:3px;}
+  .curated-dot{width:7px; height:7px; border-radius:50%; background:var(--rule);}
+  .curated-dot.filled{background:var(--green);}
+  .curated-dot.current{background:var(--red);}
 
   .action-row{display:flex; gap:10px; margin-top:6px; flex-wrap:wrap;}
   .btn{
@@ -228,6 +235,7 @@
     <div class="nav-btns">
       <button class="pill-btn" id="navHome">全部篇章</button>
       <button class="pill-btn" id="navWrong">错题本<span class="badge-count hidden" id="wrongCountBadge">0</span></button>
+      <button class="pill-btn" id="navCurated">精选错题专区</button>
     </div>
   </div>
 </header>
@@ -245,8 +253,52 @@
   var PASSAGE_MAP = {};
   PASSAGES.forEach(function(p){ PASSAGE_MAP[p.id] = p; });
 
+  // ---------- CURATED WRONG-QUESTION ZONE ----------
+  // These passages come from actual marked worksheets. Only the positions the
+  // student got wrong are left as fillable blanks ([[NN]]); everything else is
+  // shown as normal fixed text. Mastery here requires 3 CONSECUTIVE correct
+  // answers per blank (independent from the main wrongbook's streak-of-2 rule).
+  var CURATED_PASSAGES = [
+    { id:"wrongzone-bubbletea", title:"奶茶含糖量 (错题精选)", credit:"改编自实际测验卷",
+      text:"Bubble tea is a beverage that is hugely popular in Singapore. Some people are willing to queue for thirty minutes or more to get their favourite cup of tea. However, its potential impact on people's health has largely slipped [[22]] the radar.\n\nA cup of brown sugar pearl milk tea contains about three times [[23]] sugar than a can of Coca-Cola. Drinking bubble tea too often could have a detrimental impact on one's health.\n\nExperts have warned that a lack of knowledge of how much sugar goes into each cup of bubble tea could mislead people into thinking it is healthier compared to soft drinks. It is worrying that teenagers and younger children wait in the queue that form at some bubble tea shops.\n\n\"If we look at the addictive nature of sugar, it is not surprising that these drinks are popular, especially among youngsters.\" Ms Rogers said.\n\nThere could be a reason why consumers are craving sweet drinks like bubble tea. [[30]] drinks have a rollercoaster effect on the body. \"They pick you up and then drastically drop your blood sugar level making you tired, hungry and in search of your next sugary 'pick me up',\" Ms Rogers, health coach at The Nutrition Clinic, said. She advised consumers to opt for lower sugar amounts whenever [[34]] and choose the smallest cup. \"You can't make the change overnight by taking less sugar. You can only do it step by step,\" Ms Rogers said. \"Health is a personal responsibility. Do your part to maintain your own health.\"",
+      answers:{"22":["under"],"23":["more"],"30":["such"],"34":["possible"]} },
+    { id:"wrongzone-pandas", title:"大熊猫保育 (错题精选)", credit:"改编自实际测验卷",
+      text:"Giant pandas are one of the rarest animals on Earth. These bearlike mammals largely [[51]] in bamboo forests in China. They are highly recognisable due to their black and white fur and the black circles around their eyes. A giant panda has a round body and face, giving it a cuddly and adorable appearance that has endeared it to people worldwide.\n\nThere are many factors that caused the decline of the panda population. They are losing their natural habitat because of deforestation. There was once a time when wild pandas would roam through bamboo forests throughout many parts of Asia. Currently, wild pandas can only be found in China.\n\nA wild panda's daily diet [[58]] almost entirely of the leaves, stems and shoots of various bamboo species. As such, bamboos are very important sources of food for the pandas. This heavy reliance on bamboo makes them vulnerable whenever their homes are destroyed.\n\nThe Chinese government has made numerous efforts to protect pandas and the situation is getting better. Besides passing laws to stop hunting, they are also conserving the homes of giant pandas.\n\nThe act of hunting pandas has declined due to strict laws and greater public awareness of the panda's protected status. Poaching of pandas still occurs as the poachers make a lot of money from the sale of panda skin.\n\nBreeding problems are common among pandas. Some pandas are kept in captivity to help them reproduce. The world is slowly seeing results of the conservation efforts in contrast to the late 1970s when the number of wild pandas were around 1000, there are now [[65]] than 1800 of them living in the wild. This shows that conservation efforts are working thus providing hope for the world's other threatened wildlife.",
+      answers:{"51":["live"],"58":["consists"],"65":["more"]} },
+    { id:"wrongzone-oysters", title:"牡蛎与海洋保育 (错题精选)", credit:"改编自实际测验卷",
+      text:"Some see oysters as a delicious treat. Others value them as a source of pearls. To Demi Johnson, oysters are environmental 'superstars'. \"They're important,\" she told TIME Magazine. A single oyster can filter up to 50 litres of seawater a day, removing algae and harmful organisms. Groups of oysters form reefs that act as a habitat for other sea creatures.\n\nDemi learned all about oysters from her experience in oyster gardening. This is the [[49]] of growing oysters in cages for conservation purposes. At first, she knew absolutely nothing about oysters and was even afraid of them. Today, she is an expert. She has earned a 'Master Oyster Gardener' certificate and even attended a free course run by the Oyster Gardening Program (OGP) to learn more about oysters.\n\nThere used to be many oysters in the coastal waters near Demi's home. But their numbers have dropped due to disasters such as oil spills and hurricanes. Oyster gardening is a way to help. During oyster gardening season, Demi and her mother go to the Pier near their home. Demi brings along nine cages. \"Once a week I go out there and drop my cages into the water,\" she says. After a few hours, she takes the cages out from the water. She shakes each one to remove algae and mud. She then searches for predators, such as snails and crabs.\n\nHarvested oysters will then be \"planted\" on existing reefs in the ocean. The whole community is excited about this. Demi has grown more than 1,500 oysters. Last year, Demi won the National Geographic Award. She [[59]] the $1,000 cash prize to the OGP, who were able to invest that into helping the oysters to grow and flourish. Demi is happy to help. \"It's great to be able to do something that benefits our ecosystem,\" she says. \"It's a really good feeling,\" Demi added. She wishes that others would join her in saving the oysters.",
+      answers:{"49":["result"],"59":["donated"]} },
+    { id:"wrongzone-gorillas", title:"山地大猩猩 (错题精选)", credit:"改编自实际测验卷",
+      text:"Youngsters tumble, climb, and run while playing 'Follow the Leader'. Several adults watch the action, relaxing nearby. Is this scene from a playground at school? No, guess again. This is a scene from a lush mountain forest located in the Virunga mountains of Africa, and the playmates are young mountain gorillas, playing under the watchful eyes of their mothers.\n\nThe image most people form in their minds while visualising an encounter with a gorilla includes chest pounding, roaring, and big bared teeth. However, researchers studying gorillas paint a very different picture of mountain gorillas. They depict the animals as gentle, social, and mainly vegetarian creatures. The occasional ferocious-looking displays are usually from a male gorilla protecting his family from a [[56]].\n\nA typical group is [[57]] by the biggest and strongest mature male gorilla. He is called a silverback because the hair on a male's back turns from black to silvery grey as he matures. This happens when he is between 11 and 13 years old. A silverback's group also [[60]] a few females and their young.\n\nMountain gorillas spend much of their time eating. Their diet consists of an [[61]] of plants, along with a few insects and worms. At night, the animals make a nest to sleep in. Many lighter gorillas nest in trees, making beds out of bent branches. In contrast, the heavier individuals nest in grasses on the ground while babies snuggle with their mothers for the night.\n\nUnfortunately, life for mountain gorillas is not all peaceful. They are endangered and threatened by war in a small area of Africa where they live. People hunt them for food or as trophies. Their forests are cut down for firewood, farmland and housing. Luckily, many dedicated scientists and concerned park rangers are working around the clock to protect mountain gorillas, their forests, and their way of life in the mountains. Coordinated efforts are critical to ensuring a future for the mountain gorillas.",
+      answers:{"56":["threat"],"57":["protected"],"60":["comprises"],"61":["array","variety"]} },
+    { id:"wrongzone-postit", title:"便利贴的发明 (错题精选)", credit:"改编自实际测验卷", note:"(61)题的正确答案待核实",
+      text:"The humble Post-it Note is a common stationery item worldwide. Its company, 3M, sells 50 billion of the notes each year. Described as the solution to a problem nobody knew existed, these squares did not take off immediately. In fact, the Post-its were only sold 12 years after the non-damaging glue used on it was first invented.\n\nThe glue was the brainchild of Spencer Silver of 3M in 1968. For years, he struggled to find a use for his invention as no one was interested. In 1974, Art Fry, Spencer's colleague, needed a bookmark that would stick to paper without damaging it and Spencer's glue came to his mind. When their colleagues started using the notes to pass messages in the office, they [[59]] the full potential of the idea. It would take another 6 years before the notes were opened to the public in 1980.\n\n[[61]] for its inventors, the Post-it notes do not need much advertising. Customers would use them on documents they sent to others, arousing the recipient's curiosity. After trying the notes, these intrigued recipients would then buy a pad for themselves.\n\nWhile the Post-its appear very simple, the technology behind it is very high-tech. The technology remains a closely guarded [[65]] known only to a few. Because of this humble sticky note, the co-inventors are now able to enjoy comfortable retirements.",
+      answers:{"59":["realised","realized"],"61":["easy"],"65":["secret"]} },
+    { id:"wrongzone-scuba", title:"潜水运动 (错题精选)", credit:"改编自实际测验卷",
+      text:"Scuba diving is fast becoming a very popular and adventurous water sport. The number of people taking up this exercise has increased tremendously ever since it was [[52]] in Singapore by the Sports Association.\n\nThe term Scuba stands for Self-Contained Underwater Breathing Apparatus. In scuba diving, divers carry air tanks on their backs when they go underwater. Before scuba diving was invented, people dived with a heavy helmet that had an air tube attached to it. Air was usually pumped from a boat at the surface to the diver below.\n\nScuba diving is a very good and healthy form of exercise. There are many advantages in this sport. Firstly, divers learn to control their breathing, which helps in their blood circulation. Secondly, the air they breathe is usually cleaner than the normal air they breathe on land. The air in the tank is filtered before it is pumped into the air tank. Thirdly, divers become weightless when they are submerged in the water. This takes away the weight from their legs. Divers would feel that they are floating in the air. Similarly it is necessary for astronauts to be trained underwater to experience being weightless before their space missions begin.\n\nNext, divers cannot help but notice the amount of space around them when they are underwater. This is especially so in densely populated Singapore where buildings are built so close to one another due to limited land space. Lastly, the only sound that divers would hear underwater is their own breathing. In our daily lives, there is a lot of noise we hear that may distract us - people talking, telephones ringing, the sound of vehicles moving, the sound from televisions and radios, etc. As a result, divers enjoy the quietness when they go underwater.\n\nPeople who do not dive would miss three quarters of the world because only one quarter of the world is not covered with water. Scuba diving is indeed a healthy sport that all should experience at least once in a lifetime.",
+      answers:{"52":["recognised","recognized"]} },
+    { id:"wrongzone-softtoy", title:"玩偶修复医院 (错题精选)", credit:"改编自实际测验卷", note:"(56)(60)题的正确答案待核实",
+      text:"Letting go of your first love is hard. However, what happens when our first soft and huggable toy becomes lumpy and grey? Childhood plushies carry years of memories that make it hard for owners to part with them. To preserve them, soft toy hospitals were founded. They are businesses that offer soft toy repair services. Whether it is a broken nose or a missing tail, the \"doctors\" will fix them without losing too much of their original form. This includes bathing the \"patients\" in organic detergents. At SG Soft Toy Hospital, Lyn is an example of such a \"doctor\". Trust her to [[56]] these cuddly toys a brand-new look!\n\nDuring admission, Lyn makes it a point to speak to the owners. Then, she gives the toys treatments to get rid of germs. Next, she washes and dries the toys before stitching and restuffing them. When they are ready to be [[60]], she will send the owners videos and photographs to make sure that everything is fine prior to [[61]] the toys home. The smiles on the customers' faces keep Lyn going in this trade. Lyn also partners Mandai Wildlife Conservation to upcycle soft toys. She repairs the toys that are then sold. The proceeds are donated to the conservation. It is her way of giving back to the society. \"The bond that is developed with the soft toy helps the child learn and grow while having fun,\" said Lyn.",
+      answers:{"56":["give"],"60":["collected"],"61":["bringing"]} },
+    { id:"wrongzone-wetmarket", title:"传统湿巴刹 (错题精选)", credit:"改编自实际测验卷",
+      text:"When was the last time you visited a wet market? Indeed, wet markets are fast becoming a common sight in the local scene. While some wish for them to be gone, there are others who still appreciate them.\n\nMdm Feng, a local resident, looks forward to her weekly routine of grocery shopping at the market, where she is a familiar face to the shop vendors. They often talk about wet markets of the past and teach her how to choose the best produce. She knows the vendors very well – they are like a second family to her. The 32-year-old enjoys her time with these vendors. The rich knowledge that she gains from them is very valuable to her.\n\nTekka Market, home of one of the largest wet markets in Singapore, closed [[60]] doors temporarily earlier this year. A survey conducted showed declining [[61]] from the public in wet markets, with many responding that they had not visited any in the past year. This could be due to having other competitors such as supermarkets and online shopping platforms, which [[64]] more convenient to people, especially the younger generation. Stall holders also have a similar picture about a lack of interest from the younger generation.\n\nWho knows? Wet markets may just become a thing of the past.",
+      answers:{"60":["its"],"61":["patronage"],"64":["are"]} },
+    { id:"wrongzone-snacking", title:"健康零食选择 (错题精选)", credit:"改编自实际测验卷", note:"(64)题的正确答案待核实",
+      text:"Many of us enjoy eating small and light food items in between our meals. This is known as snacking. Even after eating three meals a day, we may still feel hungry. We will then give in to our craving or eat anything that is available.\n\nAt times, we eat something that [[54]] quick like chips or sweets but they contain too much sugar or salt. Ensuring we have some healthy snacks on hand can prevent this. We can make it a habit to put a healthy snack in our bag or store some healthy snacks at home.\n\nThe type of snack we eat can lead to weight gain. Studies show that the snacks we consume are often sweet or salty junk foods. Hence, it is necessary to read the nutrition facts label and buy snacks that are low [[60]] sugar and salt. This will help us make correct decisions on food.\n\nEating and doing something else at the same time is not advisable. For example, if we watch television, play video games or read while we are snacking, it is easy to overeat [[63]] being aware of it. Thus, it is a [[64]] idea to eat snacks with few distractions.\n\nAlthough snacking is a convenient way to curb hunger, it is important to make healthy snack choices. Having an occasional sweet treat is fine but we should eat healthy snacks most of the time.",
+      answers:{"54":["appears"],"60":["in"],"63":["without"],"64":["bad"]} },
+    { id:"wrongzone-miniatureart", title:"新加坡微缩艺术 (错题精选)", credit:"改编自实际测验卷",
+      text:"Have you ever seen a plate of chicken rice that could fit on your fingertip? Or a traditional shophouse smaller than your thumb? Welcome to the world of miniature art in Singapore, where everyday items and scenes are recreated in a size so tiny you might need a magnifying glass to admire the details!\n\nMany artists have turned their attention to making tiny models of food, furniture and even entire neighbourhoods. Their creations look incredibly realistic, making people take a second glance at them to realise how small they really are.\n\nOne reason miniature art is so loved is because it brings back fond memories. Artists design miniature hawker stalls, kopitiams and old-style toys that remind Singaporeans of the past. In this way, this art form helps people to [[52]] their roots and celebrate their heritage.\n\nSocial media has played a big part in [[53]] miniature art. Artists share photos and videos of their work online, where [[54]] are amazed by the delicate details. Workshops and exhibitions have also helped miniature art increase in popularity. Art studios offer classes for beginners to learn how to craft their own tiny creations. There are also special fairs where people can meet the artists behind these amazing pieces.\n\nCreating miniatures [[58]] incredible patience, steady hands and a creative mind. Many artists spend hours or even weeks on making one tiny sculpture. They believe it is worth it because every little model tells a story. A miniature plate of nasi lemak can remind someone of their grandmother's cooking or their favourite food stall.",
+      answers:{"52":["remember"],"53":["promoting"],"54":["viewers"],"58":["requires"]} },
+    { id:"wrongzone-tantockseng", title:"陈笃生医院的故事 (错题精选)", credit:"改编自实际测验卷",
+      text:"Tan Tock Seng Hospital (TTSH) was the first hospital to be started by the community for the community. Back in 1844, there were no proper medical [[46]] for the common people. Tan Tock Seng, out of compassion, made a generous [[47]] to build this hospital.\n\nTan Tock Seng was a prominent 19th century philanthropist and community leader in Singapore. Born in Malacca, he went to Singapore in 1819 and built a massive fortune [[49]] trade and real estate. When Tan Tock Seng first arrived, he started out selling vegetables. Thrifty and hardworking, he was soon able to open a shop at Boat Quay. As he could speak English, he could communicate with European traders and expand his business ventures. He later became a successful businessman and landowner.\n\nAs a respected leader in the Chinese community, he helped to settle disagreements among Chinese immigrants and supported those who were facing difficulties. Due to his good reputation, he became Singapore's first Asian Justice of the Peace. In this role, he helped to maintain peace and [[56]] order within the community.\n\nHe is best remembered [[57]] funding the \"Chinese Pauper Hospital\" (now TTSH), a hospital for poor immigrants. Without it, many of the sick would have been left dying in the streets. Importantly, he called for the hospital to care not only for the Chinese but all races.\n\nToday, many Singaporeans remember Tan Tock Seng for the hospital that carries his name. It remains a people's hospital, one of the first to readily rise up to the nation's call for more to be done in healthcare for the community.",
+      answers:{"46":["centres","centers"],"47":["donation"],"49":["from"],"56":["enforce"],"57":["for"]} }
+  ];
+  var CURATED_MAP = {};
+  CURATED_PASSAGES.forEach(function(p){ CURATED_MAP[p.id] = p; });
+
   var LS_PROGRESS = 'p6cloze_progress_v1';
   var LS_WRONGBOOK = 'p6cloze_wrongbook_v1';
+  var LS_CURATED = 'p6cloze_curated_v1';
 
   function loadJSON(key, fallback){
     try{
@@ -260,9 +312,11 @@
 
   var progress = loadJSON(LS_PROGRESS, {});     // { passageId: {best:0, attempts:0} }
   var wrongBook = loadJSON(LS_WRONGBOOK, []);   // [ {passageId, blank, correct:[..], yourAnswer, wrongCount, updatedAt} ]
+  var curatedProgress = loadJSON(LS_CURATED, {}); // { "passageId:blank": {streak:0, mastered:false} }
 
   function persistProgress(){ saveJSON(LS_PROGRESS, progress); }
   function persistWrongBook(){ saveJSON(LS_WRONGBOOK, wrongBook); }
+  function persistCurated(){ saveJSON(LS_CURATED, curatedProgress); }
 
   function showToast(msg){
     var t = document.getElementById('toast');
@@ -333,10 +387,12 @@
   document.getElementById('navHome').onclick = function(){ go({name:'home'}); };
   document.getElementById('brandHome').onclick = function(){ go({name:'home'}); };
   document.getElementById('navWrong').onclick = function(){ go({name:'wrongbook'}); };
+  document.getElementById('navCurated').onclick = function(){ go({name:'curatedHome'}); };
 
   function setActiveNav(){
     document.getElementById('navHome').classList.toggle('active', route.name==='home');
     document.getElementById('navWrong').classList.toggle('active', route.name==='wrongbook');
+    document.getElementById('navCurated').classList.toggle('active', route.name==='curatedHome' || route.name==='curatedPassage');
   }
 
   function render(){
@@ -346,6 +402,8 @@
     if(route.name === 'passage') return renderPassage(route.id, {reviewOnly:false});
     if(route.name === 'wrongbook') return renderWrongBook();
     if(route.name === 'wrongquiz') return renderWrongQuiz();
+    if(route.name === 'curatedHome') return renderCuratedHome();
+    if(route.name === 'curatedPassage') return renderCuratedPassage(route.id);
   }
 
   // ---------- HOME ----------
@@ -566,6 +624,193 @@
     if(wrongBook[idx].correctStreak >= REQUIRED_CORRECT_STREAK){
       wrongBook.splice(idx, 1);
     }
+  }
+
+  // ---------- CURATED WRONG-QUESTION ZONE (practice + grading) ----------
+  var REQUIRED_CURATED_STREAK = 3;
+
+  function curatedKey(passageId, num){ return passageId+':'+num; }
+
+  function curatedStats(passage){
+    var nums = Object.keys(passage.answers);
+    var masteredCount = 0;
+    nums.forEach(function(num){
+      var e = curatedProgress[curatedKey(passage.id, num)];
+      if(e && e.mastered) masteredCount++;
+    });
+    return { total: nums.length, mastered: masteredCount };
+  }
+
+  function renderCuratedHome(){
+    var html = '';
+    html += '<h1 class="page-title">精选错题专区</h1>';
+    html += '<p class="page-sub">这里的每一篇都来自实际批改过的练习卷，只挖空当时答错的位置，其余照原文显示。每个空格需要<b>连续答对 '+REQUIRED_CURATED_STREAK+' 次</b>才算掌握；中途一旦答错，就从头开始重新计次。</p>';
+
+    if(CURATED_PASSAGES.length === 0){
+      html += '<div class="empty-state"><span class="big">📗</span>专区暂时是空的</div>';
+      app.innerHTML = html;
+      return;
+    }
+
+    html += '<div class="grid-inner"><div class="grid">';
+    CURATED_PASSAGES.forEach(function(p){
+      var stats = curatedStats(p);
+      var allDone = stats.mastered === stats.total;
+      var chipClass = allDone ? 'good' : (stats.mastered > 0 ? 'mid' : '');
+      html += '<div class="card" data-id="'+p.id+'">'
+        + '<div class="idx">'+stats.total+' 处错题'+(p.note ? '<span class="note-flag">部分收录</span>' : '')+'</div>'
+        + '<h3>'+escapeHtml(p.title)+'</h3>'
+        + '<div class="meta"><span class="score-chip '+chipClass+'">已掌握 '+stats.mastered+'/'+stats.total+'</span></div>'
+        + '</div>';
+    });
+    html += '</div></div>';
+
+    app.innerHTML = html;
+    Array.prototype.forEach.call(app.querySelectorAll('.card'), function(el){
+      el.onclick = function(){ go({name:'curatedPassage', id: el.getAttribute('data-id')}); };
+    });
+  }
+
+  function buildCuratedPassageHTML(passage){
+    var paras = passage.text.split(/\n\n+/);
+    var body = paras.map(function(para){
+      var rendered = escapeHtml(para).replace(/\[\[(\d+)\]\]/g, function(_, num){
+        return '{{BLANK:'+num+'}}';
+      });
+      var parts = rendered.split(/\{\{BLANK:(\d+)\}\}/);
+      var out = '';
+      for(var i=0;i<parts.length;i++){
+        if(i % 2 === 0){
+          out += parts[i];
+        } else {
+          var num = parts[i];
+          var entry = curatedProgress[curatedKey(passage.id, num)];
+          if(entry && entry.mastered){
+            out += '<span class="mastered-word">'+escapeHtml(passage.answers[num][0])+'<sup class="mw-check">✓已掌握</sup></span>';
+          } else {
+            out += '<span class="blank-wrap" data-blank="'+num+'">'
+                 + '<span class="blank-num">('+num+')</span>'
+                 + '<input class="blank-input" type="text" autocomplete="off" autocapitalize="off" '
+                 + 'spellcheck="false" data-blank-input="'+num+'" />'
+                 + '<span class="mark-icon"></span>'
+                 + '</span>';
+          }
+        }
+      }
+      return '<p>'+out+'</p>';
+    }).join('');
+    return body;
+  }
+
+  function renderCuratedPassage(id){
+    var passage = CURATED_MAP[id];
+    if(!passage){ go({name:'curatedHome'}); return; }
+    var stats = curatedStats(passage);
+
+    var html = '';
+    html += '<div class="back-link" id="backCurated">← 返回精选错题专区</div>';
+    html += '<div class="paper-sheet">';
+    html += '<div class="sheet-head"><div><h2>'+escapeHtml(passage.title)+'</h2>'
+          + '<div class="credit">'+escapeHtml(passage.credit||'')+'</div>'
+          + (passage.note ? '<div class="credit" style="color:#8a2f2b;">⚠ '+escapeHtml(passage.note)+'</div>' : '')
+          + '</div>'
+          + '<div class="marks-tag">已掌握 '+stats.mastered+'/'+stats.total+'</div></div>';
+
+    if(stats.mastered === stats.total){
+      html += '<div class="passage-text">'+buildCuratedPassageHTML(passage)+'</div>';
+      html += '<div class="empty-state" style="padding:24px 10px;"><span class="big">🎉</span>这一篇的错题全部连续答对 '+REQUIRED_CURATED_STREAK+' 次了，已经掌握！</div>';
+      app.innerHTML = html;
+      document.getElementById('backCurated').onclick = function(){ go({name:'curatedHome'}); };
+      return;
+    }
+
+    html += '<div class="passage-text" id="curatedPassageText">'+buildCuratedPassageHTML(passage)+'</div>';
+    html += '<div id="curatedStampZone"></div>';
+    html += '<div class="action-row">'
+          + '<button class="btn" id="curatedCheckBtn">提交检查 Check</button>'
+          + '</div>';
+    html += '</div>';
+    app.innerHTML = html;
+
+    document.getElementById('backCurated').onclick = function(){ go({name:'curatedHome'}); };
+    document.getElementById('curatedCheckBtn').onclick = function(){ gradeCuratedPassage(passage); };
+
+    var inputs = Array.prototype.slice.call(app.querySelectorAll('input.blank-input'));
+    inputs.forEach(function(inp, idx){
+      inp.addEventListener('keydown', function(e){
+        if(e.key === 'Enter'){
+          e.preventDefault();
+          if(idx < inputs.length -1) inputs[idx+1].focus();
+          else document.getElementById('curatedCheckBtn').click();
+        }
+      });
+    });
+  }
+
+  function gradeCuratedPassage(passage){
+    var wraps = Array.prototype.slice.call(app.querySelectorAll('#curatedPassageText .blank-wrap'));
+    var correctCount = 0;
+    var justMastered = 0;
+
+    wraps.forEach(function(wrap){
+      var num = wrap.getAttribute('data-blank');
+      var input = wrap.querySelector('input.blank-input');
+      var icon = wrap.querySelector('.mark-icon');
+      var val = input.value;
+      var ok = isCorrect(passage, num, val);
+      input.disabled = true;
+
+      var key = curatedKey(passage.id, num);
+      var entry = curatedProgress[key] || { streak:0, mastered:false };
+
+      if(ok){
+        correctCount++;
+        entry.streak = (entry.streak || 0) + 1;
+        wrap.classList.add('correct');
+        icon.textContent = '✓'; icon.className = 'mark-icon ok';
+        if(entry.streak >= REQUIRED_CURATED_STREAK){
+          entry.mastered = true;
+          justMastered++;
+        }
+      } else {
+        entry.streak = 0;
+        entry.mastered = false;
+        wrap.classList.add('wrong');
+        icon.textContent = '✗'; icon.className = 'mark-icon no';
+        var hint = document.createElement('span');
+        hint.className = 'correct-hint';
+        hint.textContent = '参考答案：' + passage.answers[num].join(' / ');
+        wrap.appendChild(hint);
+      }
+      curatedProgress[key] = entry;
+    });
+
+    persistCurated();
+
+    var total = wraps.length;
+    var stampZone = document.getElementById('curatedStampZone');
+    var msg;
+    if(justMastered > 0){
+      msg = '有 '+justMastered+' 处已经连续答对 '+REQUIRED_CURATED_STREAK+' 次，掌握了！';
+    } else if(correctCount === total){
+      msg = '全部答对！继续保持，再连续答对几次就能掌握。';
+    } else {
+      msg = '继续加油，答错的位置进度已清零重新计。';
+    }
+    stampZone.innerHTML = '<div class="stamp-zone">'
+      + '<div class="stamp"><b>'+correctCount+'/'+total+'</b><span>本轮</span></div>'
+      + '<div class="stamp-msg">'+msg+'</div>'
+      + '</div>';
+
+    document.getElementById('curatedCheckBtn').disabled = true;
+    var retryBtn = document.createElement('button');
+    retryBtn.className = 'btn secondary';
+    retryBtn.textContent = '返回专区列表';
+    retryBtn.style.marginLeft = '8px';
+    retryBtn.onclick = function(){ go({name:'curatedHome'}); };
+    document.querySelector('.action-row').appendChild(retryBtn);
+
+    showToast('本轮：'+correctCount+' / '+total+' 正确');
   }
 
   // ---------- WRONG BOOK ----------
