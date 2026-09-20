@@ -40,17 +40,22 @@
   .top-inner{
     max-width:760px;margin:0 auto;padding:12px 16px;
     display:flex; align-items:center; justify-content:space-between; gap:10px;
+    flex-wrap:wrap;
   }
   .brand{display:flex; flex-direction:column; line-height:1.15; cursor:pointer;}
   .brand b{font-size:17px; letter-spacing:.5px;}
   .brand span{font-size:11px; color:var(--ink-soft); font-family:Georgia,serif; letter-spacing:1px;}
-  .nav-btns{display:flex; gap:8px;}
+  .nav-btns{display:flex; gap:8px; flex-wrap:wrap;}
   .pill-btn{
     border:1px solid var(--rule); background:#fff8ea; color:var(--ink);
     border-radius:999px; padding:7px 12px; font-size:13px; cursor:pointer;
     font-family:inherit; position:relative; white-space:nowrap;
   }
   .pill-btn.active{ background:var(--ink); color:var(--paper); border-color:var(--ink);}
+  @media (max-width: 520px){
+    .top-inner{ flex-direction:column; align-items:flex-start; gap:8px; }
+    .nav-btns{ width:100%; }
+  }
   .badge-count{
     position:absolute; top:-7px; right:-7px; background:var(--red); color:#fff;
     font-size:10px; min-width:17px; height:17px; border-radius:999px;
@@ -156,6 +161,16 @@
   .curated-dot{width:7px; height:7px; border-radius:50%; background:var(--rule);}
   .curated-dot.filled{background:var(--green);}
   .curated-dot.current{background:var(--red);}
+  .trace-panel{background:#fff8ea; border:1px dashed var(--rule); border-radius:4px; padding:10px 12px; margin-bottom:16px; font-size:12.5px;}
+  .trace-title{font-weight:600; margin-bottom:6px; color:var(--ink-soft);}
+  .trace-row{display:flex; flex-wrap:wrap; gap:4px 10px; align-items:center; padding:5px 0; border-top:1px dashed var(--rule);}
+  .trace-row:first-of-type{border-top:none;}
+  .trace-num{color:var(--gold); font-family:Georgia,serif; flex-shrink:0;}
+  .trace-status.correct{color:var(--green);}
+  .trace-status.wrong{color:var(--red);}
+  .trace-status.mastered{color:var(--green); font-weight:600;}
+  .trace-status.untried{color:var(--ink-soft); font-style:italic;}
+  .trace-time{margin-left:auto; color:var(--ink-soft); font-size:11px; white-space:nowrap;}
 
   .action-row{display:flex; gap:10px; margin-top:6px; flex-wrap:wrap;}
   .btn{
@@ -222,6 +237,12 @@
     display:inline-block; font-size:11px; background:var(--red-soft); color:var(--red);
     border-radius:999px; padding:2px 9px; margin-bottom:12px;
   }
+  .top-inner a.back{
+    font-size:12.5px; color:var(--ink-soft); text-decoration:none; border:1px solid var(--rule);
+    background:#fff8ea; padding:6px 12px; border-radius:999px; white-space:nowrap;
+  }
+  .top-inner a.back:hover{color:var(--ink); border-color:var(--gold);}
+  .last-practiced-note{font-size:11.5px; color:var(--ink-soft); margin-top:4px;}
 </style>
 </head>
 <body>
@@ -236,6 +257,7 @@
       <button class="pill-btn" id="navHome">全部篇章</button>
       <button class="pill-btn" id="navWrong">错题本<span class="badge-count hidden" id="wrongCountBadge">0</span></button>
       <button class="pill-btn" id="navCurated">精选错题专区</button>
+      <a class="back" href="index.html">← 返回专练首页</a>
     </div>
   </div>
 </header>
@@ -276,7 +298,7 @@
       answers:{"59":["realised","realized"],"61":["fortunately","luckily","happily"],"65":["secret"]} },
     { id:"wrongzone-scuba", title:"潜水运动 (错题精选)", credit:"改编自实际测验卷",
       text:"Scuba diving is fast becoming a very popular and adventurous water sport. The number of people taking up this exercise has increased tremendously ever since it was [[52]] in Singapore by the Sports Association.\n\nThe term Scuba stands for Self-Contained Underwater Breathing Apparatus. In scuba diving, divers carry air tanks on their backs when they go underwater. Before scuba diving was invented, people dived with a heavy helmet that had an air tube attached to it. Air was usually pumped from a boat at the surface to the diver below.\n\nScuba diving is a very good and healthy form of exercise. There are many advantages in this sport. Firstly, divers learn to control their breathing, which helps in their blood circulation. Secondly, the air they breathe is usually cleaner than the normal air they breathe on land. The air in the tank is filtered before it is pumped into the air tank. Thirdly, divers become weightless when they are submerged in the water. This takes away the weight from their legs. Divers would feel that they are floating in the air. Similarly it is necessary for astronauts to be trained underwater to experience being weightless before their space missions begin.\n\nNext, divers cannot help but notice the amount of space around them when they are underwater. This is especially so in densely populated Singapore where buildings are built so close to one another due to limited land space. Lastly, the only sound that divers would hear underwater is their own breathing. In our daily lives, there is a lot of noise we hear that may distract us - people talking, telephones ringing, the sound of vehicles moving, the sound from televisions and radios, etc. As a result, divers enjoy the quietness when they go underwater.\n\nPeople who do not dive would miss three quarters of the world because only one quarter of the world is not covered with water. Scuba diving is indeed a healthy sport that all should experience at least once in a lifetime.",
-      answers:{"52":["recognised","recognized"]} },
+      answers:{"52":["introduced","promoted"]} },
     { id:"wrongzone-softtoy", title:"玩偶修复医院 (错题精选)", credit:"改编自实际测验卷",
       text:"Letting go of your first love is hard. However, what happens when our first soft and huggable toy becomes lumpy and grey? Childhood plushies carry years of memories that make it hard for owners to part with them. To preserve them, soft toy hospitals were founded. They are businesses that offer soft toy repair services. Whether it is a broken nose or a missing tail, the \"doctors\" will fix them without losing too much of their original form. This includes bathing the \"patients\" in organic detergents. At SG Soft Toy Hospital, Lyn is an example of such a \"doctor\". Trust her to [[56]] these cuddly toys a brand-new look!\n\nDuring admission, Lyn makes it a point to speak to the owners. Then, she gives the toys treatments to get rid of germs. Next, she washes and dries the toys before stitching and restuffing them. When they are ready to be [[60]], she will send the owners videos and photographs to make sure that everything is fine prior to [[61]] the toys home. The smiles on the customers' faces keep Lyn going in this trade. Lyn also partners Mandai Wildlife Conservation to upcycle soft toys. She repairs the toys that are then sold. The proceeds are donated to the conservation. It is her way of giving back to the society. \"The bond that is developed with the soft toy helps the child learn and grow while having fun,\" said Lyn.",
       answers:{"56":["give"],"60":["collected","returned"],"61":["bringing"]} },
@@ -291,7 +313,22 @@
       answers:{"52":["remember"],"53":["promoting"],"54":["viewers"],"58":["requires"]} },
     { id:"wrongzone-tantockseng", title:"陈笃生医院的故事 (错题精选)", credit:"改编自实际测验卷",
       text:"Tan Tock Seng Hospital (TTSH) was the first hospital to be started by the community for the community. Back in 1844, there were no proper medical [[46]] for the common people. Tan Tock Seng, out of compassion, made a generous [[47]] to build this hospital.\n\nTan Tock Seng was a prominent 19th century philanthropist and community leader in Singapore. Born in Malacca, he went to Singapore in 1819 and built a massive fortune [[49]] trade and real estate. When Tan Tock Seng first arrived, he started out selling vegetables. Thrifty and hardworking, he was soon able to open a shop at Boat Quay. As he could speak English, he could communicate with European traders and expand his business ventures. He later became a successful businessman and landowner.\n\nAs a respected leader in the Chinese community, he helped to settle disagreements among Chinese immigrants and supported those who were facing difficulties. Due to his good reputation, he became Singapore's first Asian Justice of the Peace. In this role, he helped to maintain peace and [[56]] order within the community.\n\nHe is best remembered [[57]] funding the \"Chinese Pauper Hospital\" (now TTSH), a hospital for poor immigrants. Without it, many of the sick would have been left dying in the streets. Importantly, he called for the hospital to care not only for the Chinese but all races.\n\nToday, many Singaporeans remember Tan Tock Seng for the hospital that carries his name. It remains a people's hospital, one of the first to readily rise up to the nation's call for more to be done in healthcare for the community.",
-      answers:{"46":["centres","centers"],"47":["donation"],"49":["from"],"56":["enforce"],"57":["for"]} }
+      answers:{"46":["facilities","services","care"],"47":["donation"],"49":["from"],"56":["enforce"],"57":["for"]} },
+    { id:"wrongzone-foodwaste", title:"惜食与粮食浪费 (错题精选)", credit:"改编自实际测验卷",
+      text:"\"Planting rice is never fun. Bent from morn till the set of sun...\" These are the lyrics of a folk song about the laborious process of rice planting. Farmers in some parts of Asia still sow seeds by hand. When we take into account the hours of [[52]] spent on producing rice, it is a wonder how some people can throw away rice without [[53]]. It is an even greater crime to waste food when we think of the millions of people who suffer from hunger worldwide.\n\nAbout one-third of the food in the world gets lost or wasted every year. Not surprisingly, a lot of food wastage occurs in rich countries where people can easily afford food. Singapore is no different. In one year, Singapore can generate more than 790 million kilogrammes of food waste, an [[57]] equivalent to two bowls of food per person a day. In fact, the problem is expected to grow with our increasing population and economic activities.\n\nFood wastage can be due to many reasons. Improper storage can lead to food becoming spoilt and therefore discarded. People also prefer to buy food that looks appealing, so vegetables with slightly yellowed leaves are thrown away even though they are still edible. In many cultures, people like to be nice hosts, so they tend to be generous when serving guests, often providing more food than necessary. Therefore, we should change our attitudes and habits to prevent food wastage from happening, and if we cannot do so, to recycle food.\n\nOne country that takes food seriously is Sweden, where there is a tradition of storing food for the long winter. The culture frowns [[63]] throwing food away and has invented creative recipes for reusing leftover food. Many Swedes separate their food waste at home and dispose it into bins located nearby. Food waste can then be recycled and turned into a kind of fertiliser or fuel.\n\nAlthough we can strive to turn food waste into a resource, it is impossible to gather every bit of waste. Perhaps to tackle the problem at its roots is simply for all to first cherish food.",
+      answers:{"52":["effort"],"53":["thinking"],"57":["amount"],"63":["upon"]} },
+    { id:"wrongzone-traveleyes", title:"视障人士旅行团 (错题精选)", credit:"改编自实际测验卷",
+      text:"One travel company offers unusual and meaningful travelling experiences. Traveleyes, a British travel company, was set up with the [[51]] of helping visually impaired travellers visit different parts of the world by pairing them with guides who have perfect sight. The guides who can see well therefore [[53]] the \"eyes\" of the travellers with visual impairment. With the help of these guides, exploring new countries is no [[55]] as challenging for this special group of travellers who can get to enjoy the experiences available at different destinations.\n\nHow do travellers with visual impairment \"see\" a place? Well, all it takes is teamwork between them and the sighted guides. Thanks to their guides who describe the views in great detail, these travellers often get a much clearer idea of the views than sighted people who are more likely to take for granted things that they can see. Besides describing the picturesque views as vividly as they possibly can, the sighted guides also have to be creative at times. One visually impaired traveller shared that his guide placed a miniature marble model of the Taj Mahal in India in his hands so that he could feel what he could not see.\n\nFor the sighted guides, such travels are very meaningful too. One of them mentioned that she had learnt important values such as humility and determination from partnering the visually impaired travellers. Although they may not all share the same experiences, one thing they agree on is that they have gained a greater [[65]] for their senses. In fact, they develop a different perspective of the world.",
+      answers:{"51":["objective"],"53":["are"],"55":["longer"],"65":["use"]} },
+    { id:"wrongzone-convenience", title:"便利文化的代价 (错题精选)", credit:"改编自实际测验卷",
+      text:"This is a world of convenience. We are surrounded by things that make our lives easier or more comfortable. If you reach into your pocket, chances are you are carrying a packet of tissue paper instead of a handkerchief to avoid the trouble of washing it. Once we have enjoyed a convenience, it is hard to let it go. After all, who would like to do the laundry by hand when we can dump the clothes into a washing machine?\n\nWhile we [[54]] at the ease brought about by convenience, we may forget that it often comes at a cost. In 24-hour convenience stores, goods tend to cost a little more. When we order goods online, we usually pay a small fee to have them delivered to our doorsteps.\n\nIt is not only the cost we should consider. In modern cities, there is an ever-growing [[58]] of household appliances such as dishwashers and vacuum cleaners to help with housework. At the extreme, an American inventor, Frances Gabe, once built a house that could wash, rinse and dry itself. While a self-cleaning house might be a dream for many people, some may dislike it. Most people think of housework as a chore, but one can get a sense of satisfaction out of doing a good job when the house is nice and clean. Taking care of our house is [[60]] of making it our home.\n\nConvenience can also affect the way we think and behave. When students are asked to research a topic, they will probably turn to the internet. It provides all kinds of information and enables us to see things from different points of view, but the convenience may prevent us from forming our own opinions and thinking creatively.\n\n[[63]] helping to save time and labour, convenience frees us up, so we have more time and energy to pursue our hobbies, improve ourselves, or participate in more important activities. Yet, while we are dazzled by the bright side of convenience, let's not shut our eyes to the negative [[65]] that may result. Convenience can take away or ease our chores, but chores and struggles help give meaning to life as well.",
+      answers:{"54":["marvel"],"58":["demand"],"60":["part"],"63":["besides"],"65":["consequences"]} },
+    { id:"wrongzone-smartphone", title:"智能手机的利与弊 (错题精选)", credit:"改编自实际测验卷", note:"(64)题的正确答案为推测，建议对照原卷确认",
+      text:"For many people, smartphones have become an inseparable part of their lives. The smartphone has multiple functions. It is a mobile phone equipped not only with a digital camera, but also features of a computer, all programmed into one device. Some people are so reliant on their smartphones that they find it hard to put them aside even for a little while.\n\nStep into a restaurant today and you will likely find diners preoccupied with their phones instead of chatting with one another. There is increasing evidence that prolonged smartphone usage can affect the development of social skills. Youngsters have been found to chat freely with their friends using messaging applications such as WhatsApp, but lack the confidence to make face-to-face conversations.\n\nSmartphone usage can also lead to our manners becoming worse than ever. It is quite common to see someone [[58]] off a conversation to check their phone, or answering a call while making a purchase, impolitely [[59]] the salesperson serving them. Some people may also show less restraint when they communicate online, giving harsh criticisms or making rude [[60]] – something they would probably think twice before doing if they were in a face-to-face situation.\n\nThere are other negative effects to note. Excessive smartphone usage has been associated with poorer sleep quality, which can lower our ability to think well and study or work. Experts have also [[62]] against over-relying on the smartphone as it may lead to our brain growing lazy. After all, we no longer need to remember phone numbers when they are stored in our contact list. [[63]] do we need to hold details in our head when we can set a reminder in our phone.\n\n[[64]] the potential harmful effects, the use of smartphones is likely to grow as it brings about many benefits as well. What we can do is to be mindful of its possible effects and strive to be a master, not slave, of this technology.",
+      answers:{"58":["trail"],"59":["disrespecting"],"60":["remarks"],"62":["warned"],"63":["neither"],"64":["despite"]} },
+    { id:"wrongzone-wetmarket2", title:"湿巴刹的魅力 (错题精选)", credit:"改编自实际测验卷",
+      text:"Where can you buy fresh produce without increasing your grocery bill? Ask any Singaporean and they are likely to introduce you to a wet market. Wet markets are named as such because the floors there are often wet. This can be caused by the melting of ice used to keep seafood fresh and the regular cleaning of stalls. [[53]] of the wet floors and mix of smells, people still go there for their regular grocery shopping. As most wet markets begin operations way before sunrise, those people who want to buy the freshest produce will wake up very early and make their way there to buy groceries.\n\nYou may think the air-conditioned supermarkets with their conducive environment will eventually overtake wet markets. However, there are a few reasons why people have a preference for wet markets over supermarkets even though the latter are cleaner and more comfortable. For a [[58]], freshness is guaranteed with vegetables and meats delivered straight from the farms. Secondly, if you have built a rapport with the stallholders, they may give you free vegetables or meats when you buy from them.\n\nYou can also catch up with friends and neighbours who are there for grocery shopping. The stallholders or other shoppers may share [[62]] for preparing some popular local dishes with you.\n\nThere is a sense of belonging to the community as people of different races gather in wet markets to buy groceries. These are also places where they share jokes, chat, and [[64]] with one another. For these reasons, wet markets will provide you with an [[65]] to experience a part of Singapore's culture.\n\nSo, roll up your trouser cuffs, slip on sensible shoes and go shop at a wet market.",
+      answers:{"53":["despite"],"58":["start"],"62":["tips"],"64":["connect"],"65":["opportunity"]} }
   ];
   var CURATED_MAP = {};
   CURATED_PASSAGES.forEach(function(p){ CURATED_MAP[p.id] = p; });
@@ -634,11 +671,20 @@
   function curatedStats(passage){
     var nums = Object.keys(passage.answers);
     var masteredCount = 0;
+    var lastUpdatedAt = 0;
     nums.forEach(function(num){
       var e = curatedProgress[curatedKey(passage.id, num)];
       if(e && e.mastered) masteredCount++;
+      if(e && e.updatedAt && e.updatedAt > lastUpdatedAt) lastUpdatedAt = e.updatedAt;
     });
-    return { total: nums.length, mastered: masteredCount };
+    return { total: nums.length, mastered: masteredCount, lastUpdatedAt: lastUpdatedAt };
+  }
+
+  function formatLastPracticed(ts){
+    if(!ts) return '';
+    var d = new Date(ts);
+    var pad = function(n){ return String(n).padStart(2,'0'); };
+    return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());
   }
 
   function renderCuratedHome(){
@@ -652,6 +698,16 @@
       return;
     }
 
+    var allStats = CURATED_PASSAGES.map(curatedStats);
+    var totalBlanks = allStats.reduce(function(s,x){ return s+x.total; }, 0);
+    var totalMastered = allStats.reduce(function(s,x){ return s+x.mastered; }, 0);
+    var mostRecent = allStats.reduce(function(m,x){ return Math.max(m, x.lastUpdatedAt); }, 0);
+    html += '<div class="last-practiced-note">'
+      + (mostRecent
+          ? '孩子上次在这个专区练习的时间：<b>'+formatLastPracticed(mostRecent)+'</b>　·　总进度：'+totalMastered+' / '+totalBlanks+' 已掌握'
+          : '孩子还没有在这个专区练习过。')
+      + '</div>';
+
     html += '<div class="grid-inner"><div class="grid">';
     CURATED_PASSAGES.forEach(function(p){
       var stats = curatedStats(p);
@@ -661,6 +717,7 @@
         + '<div class="idx">'+stats.total+' 处错题'+(p.note ? '<span class="note-flag">部分收录</span>' : '')+'</div>'
         + '<h3>'+escapeHtml(p.title)+'</h3>'
         + '<div class="meta"><span class="score-chip '+chipClass+'">已掌握 '+stats.mastered+'/'+stats.total+'</span></div>'
+        + (stats.lastUpdatedAt ? '<div class="last-practiced-note">上次练习：'+formatLastPracticed(stats.lastUpdatedAt)+'</div>' : '')
         + '</div>';
     });
     html += '</div></div>';
@@ -702,6 +759,33 @@
     return body;
   }
 
+  function buildLastAttemptTraceHtml(passage){
+    var nums = Object.keys(passage.answers);
+    var rows = nums.map(function(num){
+      var entry = curatedProgress[curatedKey(passage.id, num)];
+      if(!entry || !entry.updatedAt){
+        return '<div class="trace-row"><span class="trace-num">('+num+')</span>'
+          + '<span class="trace-status untried">尚未作答</span></div>';
+      }
+      var statusHtml;
+      if(entry.mastered){
+        statusHtml = '<span class="trace-status mastered">✓ 已掌握</span>';
+      } else if(entry.lastCorrect){
+        statusHtml = '<span class="trace-status correct">✓ 答对</span>';
+      } else {
+        statusHtml = '<span class="trace-status wrong">✗ 答错（正确答案：'+escapeHtml(passage.answers[num].join(' / '))+'）</span>';
+      }
+      var streakText = entry.mastered ? '' : '　连续答对 '+(entry.streak||0)+'/'+REQUIRED_CURATED_STREAK+' 次';
+      return '<div class="trace-row"><span class="trace-num">('+num+')</span>'
+        + '<span>上次填写：<b>'+escapeHtml(entry.lastAnswer || '(空白)')+'</b></span>'
+        + statusHtml
+        + '<span>'+streakText+'</span>'
+        + '<span class="trace-time">'+formatLastPracticed(entry.updatedAt)+'</span>'
+        + '</div>';
+    }).join('');
+    return '<div class="trace-panel"><div class="trace-title">上次练习记录</div>'+rows+'</div>';
+  }
+
   function renderCuratedPassage(id){
     var passage = CURATED_MAP[id];
     if(!passage){ go({name:'curatedHome'}); return; }
@@ -716,11 +800,20 @@
           + '</div>'
           + '<div class="marks-tag">已掌握 '+stats.mastered+'/'+stats.total+'</div></div>';
 
+    html += '<div id="curatedTracePanel" class="hidden">'+buildLastAttemptTraceHtml(passage)+'</div>';
+
     if(stats.mastered === stats.total){
       html += '<div class="passage-text">'+buildCuratedPassageHTML(passage)+'</div>';
       html += '<div class="empty-state" style="padding:24px 10px;"><span class="big">🎉</span>这一篇的错题全部连续答对 '+REQUIRED_CURATED_STREAK+' 次了，已经掌握！</div>';
+      html += '<div class="action-row"><button class="btn secondary" id="curatedToggleTraceBtn">查看上次作答</button></div>';
+      html += '</div>';
       app.innerHTML = html;
       document.getElementById('backCurated').onclick = function(){ go({name:'curatedHome'}); };
+      document.getElementById('curatedToggleTraceBtn').onclick = function(){
+        var panel = document.getElementById('curatedTracePanel');
+        panel.classList.toggle('hidden');
+        this.textContent = panel.classList.contains('hidden') ? '查看上次作答' : '收起';
+      };
       return;
     }
 
@@ -728,12 +821,18 @@
     html += '<div id="curatedStampZone"></div>';
     html += '<div class="action-row">'
           + '<button class="btn" id="curatedCheckBtn">提交检查 Check</button>'
+          + '<button class="btn secondary" id="curatedToggleTraceBtn">查看上次作答</button>'
           + '</div>';
     html += '</div>';
     app.innerHTML = html;
 
     document.getElementById('backCurated').onclick = function(){ go({name:'curatedHome'}); };
     document.getElementById('curatedCheckBtn').onclick = function(){ gradeCuratedPassage(passage); };
+    document.getElementById('curatedToggleTraceBtn').onclick = function(){
+      var panel = document.getElementById('curatedTracePanel');
+      panel.classList.toggle('hidden');
+      this.textContent = panel.classList.contains('hidden') ? '查看上次作答' : '收起';
+    };
 
     var inputs = Array.prototype.slice.call(app.querySelectorAll('input.blank-input'));
     inputs.forEach(function(inp, idx){
@@ -762,6 +861,9 @@
 
       var key = curatedKey(passage.id, num);
       var entry = curatedProgress[key] || { streak:0, mastered:false };
+      entry.updatedAt = Date.now();
+      entry.lastAnswer = val;
+      entry.lastCorrect = ok;
 
       if(ok){
         correctCount++;
