@@ -191,6 +191,15 @@
     box-shadow:0 4px 14px rgba(0,0,0,.28);
   }
   .curated-bottom-spacer{height:70px;}
+  .section-h{font-size:14px; color:var(--ink-soft); margin:26px 0 10px; border-bottom:1px solid var(--rule); padding-bottom:6px;}
+  .capsule-row{display:flex; flex-wrap:wrap; gap:8px;}
+  .capsule-pill{
+    display:inline-flex; align-items:center; gap:6px;
+    background:#f2ead9; border:1px solid var(--rule); border-radius:999px;
+    padding:7px 14px; font-size:12px; color:var(--ink-soft); cursor:pointer;
+  }
+  .capsule-pill:hover{ border-color:var(--gold); color:var(--ink); }
+  .capsule-time{ color:var(--gold); font-weight:600; white-space:nowrap; }
   .btn{
     font-family:"Noto Serif SC",serif; font-size:14px; padding:10px 18px; border-radius:3px;
     border:1px solid var(--ink); background:var(--ink); color:var(--paper); cursor:pointer;
@@ -341,9 +350,9 @@
     { id:"wrongzone-convenience", title:"便利文化的代价 (错题精选)", credit:"改编自实际测验卷",
       text:"This is a world of convenience. We are surrounded by things that make our lives easier or more comfortable. If you reach into your pocket, chances are you are carrying a packet of tissue paper instead of a handkerchief to avoid the trouble of washing it. Once we have enjoyed a convenience, it is hard to let it go. After all, who would like to do the laundry by hand when we can dump the clothes into a washing machine?\n\nWhile we [[54]] at the ease brought about by convenience, we may forget that it often comes at a cost. In 24-hour convenience stores, goods tend to cost a little more. When we order goods online, we usually pay a small fee to have them delivered to our doorsteps.\n\nIt is not only the cost we should consider. In modern cities, there is an ever-growing [[58]] of household appliances such as dishwashers and vacuum cleaners to help with housework. At the extreme, an American inventor, Frances Gabe, once built a house that could wash, rinse and dry itself. While a self-cleaning house might be a dream for many people, some may dislike it. Most people think of housework as a chore, but one can get a sense of satisfaction out of doing a good job when the house is nice and clean. Taking care of our house is [[60]] of making it our home.\n\nConvenience can also affect the way we think and behave. When students are asked to research a topic, they will probably turn to the internet. It provides all kinds of information and enables us to see things from different points of view, but the convenience may prevent us from forming our own opinions and thinking creatively.\n\n[[63]] helping to save time and labour, convenience frees us up, so we have more time and energy to pursue our hobbies, improve ourselves, or participate in more important activities. Yet, while we are dazzled by the bright side of convenience, let's not shut our eyes to the negative [[65]] that may result. Convenience can take away or ease our chores, but chores and struggles help give meaning to life as well.",
       answers:{"54":["marvel"],"58":["demand"],"60":["part"],"63":["besides"],"65":["consequences"]} },
-    { id:"wrongzone-smartphone", title:"智能手机的利与弊 (错题精选)", credit:"改编自实际测验卷", note:"(64)题的正确答案为推测，建议对照原卷确认",
+    { id:"wrongzone-smartphone", title:"智能手机的利与弊 (错题精选)", credit:"改编自实际测验卷",
       text:"For many people, smartphones have become an inseparable part of their lives. The smartphone has multiple functions. It is a mobile phone equipped not only with a digital camera, but also features of a computer, all programmed into one device. Some people are so reliant on their smartphones that they find it hard to put them aside even for a little while.\n\nStep into a restaurant today and you will likely find diners preoccupied with their phones instead of chatting with one another. There is increasing evidence that prolonged smartphone usage can affect the development of social skills. Youngsters have been found to chat freely with their friends using messaging applications such as WhatsApp, but lack the confidence to make face-to-face conversations.\n\nSmartphone usage can also lead to our manners becoming worse than ever. It is quite common to see someone [[58]] off a conversation to check their phone, or answering a call while making a purchase, impolitely [[59]] the salesperson serving them. Some people may also show less restraint when they communicate online, giving harsh criticisms or making rude [[60]] – something they would probably think twice before doing if they were in a face-to-face situation.\n\nThere are other negative effects to note. Excessive smartphone usage has been associated with poorer sleep quality, which can lower our ability to think well and study or work. Experts have also [[62]] against over-relying on the smartphone as it may lead to our brain growing lazy. After all, we no longer need to remember phone numbers when they are stored in our contact list. [[63]] do we need to hold details in our head when we can set a reminder in our phone.\n\n[[64]] the potential harmful effects, the use of smartphones is likely to grow as it brings about many benefits as well. What we can do is to be mindful of its possible effects and strive to be a master, not slave, of this technology.",
-      answers:{"58":["trail"],"59":["disrespecting"],"60":["remarks"],"62":["warned"],"63":["neither"],"64":["despite"]} },
+      answers:{"58":["trail"],"59":["ignoring","disregarding","neglecting"],"60":["remarks"],"62":["warned"],"63":["neither"],"64":["despite"]} },
     { id:"wrongzone-wetmarket2", title:"湿巴刹的魅力 (错题精选)", credit:"改编自实际测验卷",
       text:"Where can you buy fresh produce without increasing your grocery bill? Ask any Singaporean and they are likely to introduce you to a wet market. Wet markets are named as such because the floors there are often wet. This can be caused by the melting of ice used to keep seafood fresh and the regular cleaning of stalls. [[53]] of the wet floors and mix of smells, people still go there for their regular grocery shopping. As most wet markets begin operations way before sunrise, those people who want to buy the freshest produce will wake up very early and make their way there to buy groceries.\n\nYou may think the air-conditioned supermarkets with their conducive environment will eventually overtake wet markets. However, there are a few reasons why people have a preference for wet markets over supermarkets even though the latter are cleaner and more comfortable. For a [[58]], freshness is guaranteed with vegetables and meats delivered straight from the farms. Secondly, if you have built a rapport with the stallholders, they may give you free vegetables or meats when you buy from them.\n\nYou can also catch up with friends and neighbours who are there for grocery shopping. The stallholders or other shoppers may share [[62]] for preparing some popular local dishes with you.\n\nThere is a sense of belonging to the community as people of different races gather in wet markets to buy groceries. These are also places where they share jokes, chat, and [[64]] with one another. For these reasons, wet markets will provide you with an [[65]] to experience a part of Singapore's culture.\n\nSo, roll up your trouser cuffs, slip on sensible shoes and go shop at a wet market.",
       answers:{"53":["despite"],"58":["start"],"62":["tips"],"64":["connect"],"65":["opportunity"]} }
@@ -354,6 +363,7 @@
   var LS_PROGRESS = 'p6cloze_progress_v1';
   var LS_WRONGBOOK = 'p6cloze_wrongbook_v1';
   var LS_CURATED = 'p6cloze_curated_v1';
+  var LS_CURATED_META = 'p6cloze_curated_meta_v1';
 
   function loadJSON(key, fallback){
     try{
@@ -368,10 +378,12 @@
   var progress = loadJSON(LS_PROGRESS, {});     // { passageId: {best:0, attempts:0} }
   var wrongBook = loadJSON(LS_WRONGBOOK, []);   // [ {passageId, blank, correct:[..], yourAnswer, wrongCount, updatedAt} ]
   var curatedProgress = loadJSON(LS_CURATED, {}); // { "passageId:blank": {streak:0, mastered:false} }
+  var curatedMeta = loadJSON(LS_CURATED_META, {}); // { passageId: {roundsCompleted:0, lastRoundAt:0} }
 
   function persistProgress(){ saveJSON(LS_PROGRESS, progress); }
   function persistWrongBook(){ saveJSON(LS_WRONGBOOK, wrongBook); }
   function persistCurated(){ saveJSON(LS_CURATED, curatedProgress); }
+  function persistCuratedMeta(){ saveJSON(LS_CURATED_META, curatedMeta); }
 
   function showToast(msg){
     var t = document.getElementById('toast');
@@ -687,8 +699,29 @@
 
   // ---------- CURATED WRONG-QUESTION ZONE (practice + grading) ----------
   var REQUIRED_CURATED_STREAK = 3;
+  var CURATED_COOLDOWN_MS = 12 * 60 * 60 * 1000; // 12-hour rest between attempts on the same passage
 
   function curatedKey(passageId, num){ return passageId+':'+num; }
+
+  function getPassageMeta(passageId){
+    return curatedMeta[passageId] || { roundsCompleted: 0, lastRoundAt: 0 };
+  }
+  function isOnCooldown(passage){
+    var meta = getPassageMeta(passage.id);
+    return !!meta.lastRoundAt && (Date.now() - meta.lastRoundAt) < CURATED_COOLDOWN_MS;
+  }
+  function cooldownRemainingMs(passage){
+    var meta = getPassageMeta(passage.id);
+    if(!meta.lastRoundAt) return 0;
+    return Math.max(0, CURATED_COOLDOWN_MS - (Date.now() - meta.lastRoundAt));
+  }
+  function formatDuration(ms){
+    var totalMin = Math.max(1, Math.ceil(ms / 60000));
+    var h = Math.floor(totalMin / 60);
+    var m = totalMin % 60;
+    if(h > 0) return h+'小时'+(m > 0 ? m+'分' : '');
+    return m+'分钟';
+  }
 
   function curatedStats(passage){
     var nums = Object.keys(passage.answers);
@@ -712,7 +745,7 @@
   function renderCuratedHome(){
     var html = '';
     html += '<h1 class="page-title">精选错题专区</h1>';
-    html += '<p class="page-sub">这里的每一篇都来自实际批改过的练习卷，只挖空当时答错的位置，其余照原文显示。每个空格需要<b>连续答对 '+REQUIRED_CURATED_STREAK+' 次</b>才算掌握；中途一旦答错，就从头开始重新计次。</p>';
+    html += '<p class="page-sub">这里的每一篇都来自实际批改过的练习卷，只挖空当时答错的位置，其余照原文显示。每个空格需要<b>连续答对 '+REQUIRED_CURATED_STREAK+' 次</b>才算掌握；中途一旦答错，就从头开始重新计次。同一篇文章每 12 小时只能挑战一次，做完的文章会先收进下方"休息区"，冷却期过后再回来。</p>';
 
     if(CURATED_PASSAGES.length === 0){
       html += '<div class="empty-state"><span class="big">📗</span>专区暂时是空的</div>';
@@ -730,27 +763,55 @@
           : '孩子还没有在这个专区练习过。')
       + '</div>';
 
-    html += '<div class="grid-inner"><div class="grid">';
+    var available = [];
+    var resting = [];
     CURATED_PASSAGES.forEach(function(p){
       var stats = curatedStats(p);
+      if(stats.mastered < stats.total && isOnCooldown(p)){
+        resting.push(p);
+      } else {
+        available.push(p);
+      }
+    });
+    // recommend never-attempted / longest-rested passages first
+    available.sort(function(a,b){
+      return getPassageMeta(a.id).lastRoundAt - getPassageMeta(b.id).lastRoundAt;
+    });
+
+    html += '<div class="grid-inner"><div class="grid">';
+    available.forEach(function(p){
+      var stats = curatedStats(p);
+      var meta = getPassageMeta(p.id);
       var allDone = stats.mastered === stats.total;
       var chipClass = allDone ? 'good' : (stats.mastered > 0 ? 'mid' : '');
       html += '<div class="card" data-id="'+p.id+'">'
         + '<div class="idx">'+stats.total+' 处错题'+(p.note ? '<span class="note-flag">部分收录</span>' : '')+'</div>'
         + '<h3>'+escapeHtml(p.title)+'</h3>'
         + '<div class="meta"><span class="score-chip '+chipClass+'">已掌握 '+stats.mastered+'/'+stats.total+'</span></div>'
-        + (stats.lastUpdatedAt ? '<div class="last-practiced-note">上次练习：'+formatLastPracticed(stats.lastUpdatedAt)+'</div>' : '')
+        + (meta.roundsCompleted ? '<div class="last-practiced-note">本机已做 '+meta.roundsCompleted+' 次'+(stats.lastUpdatedAt ? '　·　上次：'+formatLastPracticed(stats.lastUpdatedAt) : '')+'</div>' : '')
         + '</div>';
     });
     html += '</div></div>';
 
+    if(resting.length){
+      html += '<div class="section-h">💊 休息区（12小时冷却中，之后可再挑战）</div>';
+      html += '<div class="capsule-row">';
+      resting.forEach(function(p){
+        var remain = cooldownRemainingMs(p);
+        var stats = curatedStats(p);
+        html += '<div class="capsule-pill" data-id="'+p.id+'">💊 '+escapeHtml(p.title.replace(/\s*\(错题精选\)\s*$/,''))
+          + '<span class="capsule-time">'+formatDuration(remain)+'后可再做</span></div>';
+      });
+      html += '</div>';
+    }
+
     app.innerHTML = html;
-    Array.prototype.forEach.call(app.querySelectorAll('.card'), function(el){
+    Array.prototype.forEach.call(app.querySelectorAll('.card, .capsule-pill'), function(el){
       el.onclick = function(){ go({name:'curatedPassage', id: el.getAttribute('data-id')}); };
     });
   }
 
-  function buildCuratedPassageHTML(passage){
+  function buildCuratedPassageHTML(passage, locked){
     var paras = passage.text.split(/\n\n+/);
     var body = paras.map(function(para){
       var rendered = escapeHtml(para).replace(/\[\[(\d+)\]\]/g, function(_, num){
@@ -766,6 +827,14 @@
           var entry = curatedProgress[curatedKey(passage.id, num)];
           if(entry && entry.mastered){
             out += '<span class="mastered-word">'+escapeHtml(passage.answers[num][0])+'<sup class="mw-check">✓已掌握</sup></span>';
+          } else if(locked){
+            var lockedCls = entry ? (entry.lastCorrect ? 'correct' : 'wrong') : '';
+            var lockedVal = entry ? escapeHtml(entry.lastAnswer || '') : '';
+            out += '<span class="blank-wrap" data-blank="'+num+'">'
+                 + '<span class="blank-num">('+num+')</span>'
+                 + '<input class="blank-input '+lockedCls+'" type="text" disabled value="'+lockedVal+'" />'
+                 + '<span class="mark-icon '+(entry ? (entry.lastCorrect?'ok':'no') : '')+'">'+(entry ? (entry.lastCorrect?'✓':'✗') : '')+'</span>'
+                 + '</span>';
           } else {
             out += '<span class="blank-wrap" data-blank="'+num+'">'
                  + '<span class="blank-num">('+num+')</span>'
@@ -812,6 +881,20 @@
     var passage = CURATED_MAP[id];
     if(!passage){ go({name:'curatedHome'}); return; }
     var stats = curatedStats(passage);
+    var meta = getPassageMeta(passage.id);
+    var roundsNote = meta.roundsCompleted ? '　·　本机已做 '+meta.roundsCompleted+' 次' : '';
+
+    function bindTraceToggle(){
+      document.getElementById('curatedToggleTraceBtn').onclick = function(){
+        var panel = document.getElementById('curatedTracePanel');
+        var willShow = panel.classList.contains('hidden');
+        panel.classList.toggle('hidden');
+        this.textContent = willShow ? '收起' : '查看上次作答';
+        if(willShow){
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      };
+    }
 
     var html = '';
     html += '<div class="back-link" id="backCurated">← 返回精选错题专区</div>';
@@ -820,7 +903,7 @@
           + '<div class="credit">'+escapeHtml(passage.credit||'')+'</div>'
           + (passage.note ? '<div class="credit" style="color:#8a2f2b;">⚠ '+escapeHtml(passage.note)+'</div>' : '')
           + '</div>'
-          + '<div class="marks-tag">已掌握 '+stats.mastered+'/'+stats.total+'</div></div>';
+          + '<div class="marks-tag">已掌握 '+stats.mastered+'/'+stats.total+roundsNote+'</div></div>';
 
     html += '<div id="curatedTracePanel" class="hidden">'+buildLastAttemptTraceHtml(passage)+'</div>';
 
@@ -833,11 +916,27 @@
       html += '<div class="action-row curated-float-bar" id="curatedActionBar"><button class="btn secondary" id="curatedToggleTraceBtn">查看上次作答</button></div>';
       app.innerHTML = html;
       document.getElementById('backCurated').onclick = function(){ go({name:'curatedHome'}); };
-      document.getElementById('curatedToggleTraceBtn').onclick = function(){
-        var panel = document.getElementById('curatedTracePanel');
-        panel.classList.toggle('hidden');
-        this.textContent = panel.classList.contains('hidden') ? '查看上次作答' : '收起';
-      };
+      bindTraceToggle();
+      setupCuratedScrollBottom();
+      setupCuratedFloatingBar();
+      return;
+    }
+
+    var onCooldown = isOnCooldown(passage);
+
+    if(onCooldown){
+      var remain = cooldownRemainingMs(passage);
+      html += '<div class="empty-state" style="padding:14px 10px; text-align:left;">'
+        + '<span class="big">💊</span>这一篇刚做过，正在休息中——还需 <b>'+formatDuration(remain)+'</b> 才能再次挑战。'
+        + '<br>下面先让你看看上一轮的作答痕迹，输入框暂时不能编辑。</div>';
+      html += '<div class="passage-text" id="curatedPassageText">'+buildCuratedPassageHTML(passage, true)+'</div>';
+      html += '<div class="curated-bottom-spacer"></div>';
+      html += '</div>';
+      html += '<button class="scroll-to-bottom-btn" id="curatedScrollBottomBtn" title="一键滚动到底部" aria-label="滚动到底部">↓</button>';
+      html += '<div class="action-row curated-float-bar" id="curatedActionBar"><button class="btn secondary" id="curatedToggleTraceBtn">查看上次作答</button></div>';
+      app.innerHTML = html;
+      document.getElementById('backCurated').onclick = function(){ go({name:'curatedHome'}); };
+      bindTraceToggle();
       setupCuratedScrollBottom();
       setupCuratedFloatingBar();
       return;
@@ -856,11 +955,7 @@
 
     document.getElementById('backCurated').onclick = function(){ go({name:'curatedHome'}); };
     document.getElementById('curatedCheckBtn').onclick = function(){ gradeCuratedPassage(passage); };
-    document.getElementById('curatedToggleTraceBtn').onclick = function(){
-      var panel = document.getElementById('curatedTracePanel');
-      panel.classList.toggle('hidden');
-      this.textContent = panel.classList.contains('hidden') ? '查看上次作答' : '收起';
-    };
+    bindTraceToggle();
     setupCuratedScrollBottom();
     setupCuratedFloatingBar();
 
@@ -918,6 +1013,12 @@
     });
 
     persistCurated();
+
+    var pMeta = getPassageMeta(passage.id);
+    pMeta.roundsCompleted = (pMeta.roundsCompleted || 0) + 1;
+    pMeta.lastRoundAt = Date.now();
+    curatedMeta[passage.id] = pMeta;
+    persistCuratedMeta();
 
     var total = wraps.length;
     var stampZone = document.getElementById('curatedStampZone');
