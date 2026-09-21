@@ -111,6 +111,7 @@
   .q-card.due .q-sentence{color:var(--red);}
   .q-sentence{font-size:14px; line-height:1.7;}
   .q-sentence .blank{color:var(--gold); font-weight:600;}
+  .target-word{text-decoration-color:var(--gold); text-decoration-thickness:2px; font-weight:600;}
   .progress-row{display:flex; align-items:center; gap:8px; margin-top:8px;}
   .dots{display:flex; gap:4px;}
   .dot{width:8px; height:8px; border-radius:50%; background:var(--rule);}
@@ -402,12 +403,12 @@
       sentence:"It is important for them to be briefed [[e1]] internet safety before interacting with AI.",
       blanks:[{wrong:"over", correct:["on","about"]}],
       note:"固定搭配 briefed on/about（就……简要告知），on和about都可以，不用briefed over。" },
-    { id:'synonym-wolves-19', category:'synonym',
-      sentence:"Wolves work together to take down prey much larger than an individual wolf; prey that may otherwise [[blank]] them.",
+    { id:'synonym-wolves-19', category:'synonym', targetWord:"elude",
+      sentence:"Wolves work together to take down prey much larger than an individual wolf; prey that may otherwise elude them.",
       options:["thwart","invade","escape","frustrate"], answer:"escape",
       note:"elude表示「（成功）躲避、逃脱追捕」，与escape（逃脱）意思最接近。" },
-    { id:'synonym-stanley-17', category:'synonym',
-      sentence:"It had taken him months to [[blank]] a plan to escape and this was the right time to execute it.",
+    { id:'synonym-stanley-17', category:'synonym', targetWord:"come up with",
+      sentence:"It had taken him months to come up with a plan to escape and this was the right time to execute it.",
       options:["devise","deduce","suggest","produce"], answer:"devise",
       note:"come up with表示「想出、设计出（计划）」，与devise（设计，想出）意思最接近。" },
     { id:'inversion-6', category:'inversion',
@@ -418,16 +419,16 @@
       sentence:"[[blank]] his teacher's encouragement, Ryan submitted his writing to a national competition.",
       options:["Despite","Giving rise to","As a result of","Regardless of"], answer:"As a result of",
       note:"因为老师的鼓励，Ryan才投稿，是因果关系，要用表示「因为、由于」的As a result of，而不是表示「尽管」的Despite/Regardless of。" },
-    { id:'synonym-12', category:'synonym',
-      sentence:"[[blank]] her experience as a peer support leader, Kelly shared the importance of helping one another in times of need.",
+    { id:'synonym-12', category:'synonym', targetWord:"Recounting",
+      sentence:"Recounting her experience as a peer support leader, Kelly shared the importance of helping one another in times of need.",
       options:["Enacting","Mentioning","Recounting","Commenting"], answer:"Recounting",
       note:"Recounting表示「叙述，讲述（经历）」，符合分享自己经历的语境。" },
-    { id:'synonym-13', category:'synonym',
-      sentence:"The group [[blank]] Claire's ideas and agreed to decorate the classroom the way she suggested.",
-      options:["recited","echoed","reiterated","advocated"], answer:"echoed",
-      note:"echoed在这里表示「附和，呼应（某人的观点）」，符合大家赞同并采纳Claire建议的语境。" },
-    { id:'synonym-14', category:'synonym',
-      sentence:"Mark's father used a more [[blank]] approach, encouraging reflection and self-improvement rather than punishing him.",
+    { id:'synonym-13', category:'synonym', targetWord:"advocated",
+      sentence:"The group advocated Claire's ideas and agreed to decorate the classroom the way she suggested.",
+      options:["recited","echoed","reiterated","advocated"], answer:"advocated",
+      note:"advocated在这里表示「支持，拥护（某个想法）」，符合大家赞同并采纳Claire建议的语境。" },
+    { id:'synonym-14', category:'synonym', targetWord:"nurturing",
+      sentence:"Mark's father used a more nurturing approach, encouraging reflection and self-improvement rather than punishing him.",
       options:["fragile","passive","delicate","nurturing"], answer:"nurturing",
       note:"nurturing表示「培育性的，关怀式的」，符合「鼓励反思和自我提升而非惩罚」这种教育方式。" },
     { id:'rewrite-61', category:'rewrite', type:'rewrite',
@@ -515,6 +516,11 @@
   }
   function sentenceWithBlank(sentence, filler){
     return escapeHtml(sentence).replace('[[blank]]', filler);
+  }
+  function sentenceWithUnderline(sentence, targetWord){
+    var escaped = escapeHtml(sentence);
+    var escapedWord = escapeHtml(targetWord);
+    return escaped.replace(escapedWord, '<u class="target-word">'+escapedWord+'</u>');
   }
   var CIRCLED_NUMS = ['①','②','③','④','⑤','⑥'];
   function sentenceWithErrorsHtml(sentence, blanks){
@@ -623,6 +629,8 @@
       sentenceHtml = sentenceWithErrorsHtml(q.sentence, q.blanks);
     } else if(q.type === 'rewrite'){
       sentenceHtml = escapeHtml(q.original)+' <span style="color:var(--gold);">→ ('+escapeHtml(q.starterHint)+')</span>';
+    } else if(q.targetWord){
+      sentenceHtml = sentenceWithUnderline(q.sentence, q.targetWord);
     } else {
       sentenceHtml = sentenceWithBlank(q.sentence, '<span class="blank">____</span>');
     }
@@ -706,7 +714,10 @@
       html += '<div class="rewrite-hint">Rewrite using: <b>'+escapeHtml(q.starterHint)+'</b>. Your answer must be in one sentence with the same meaning.</div>';
       html += '<textarea class="rewrite-input'+(reviewAnswered?(rewriteOk?' correct':' wrong'):'')+'" id="rewriteInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Write your full sentence here" '+(reviewAnswered?'disabled':'')+'>'+(reviewAnswered?escapeHtml(q._typed||''):'')+'</textarea>';
     } else {
-      html += '<div class="sentence">'+sentenceWithBlank(q.sentence, '<span class="blank-slot">&nbsp;</span>')+'</div>';
+      var mcqSentenceHtml = q.targetWord
+        ? sentenceWithUnderline(q.sentence, q.targetWord)
+        : sentenceWithBlank(q.sentence, '<span class="blank-slot">&nbsp;</span>');
+      html += '<div class="sentence">'+mcqSentenceHtml+'</div>';
       html += '<div class="opt-grid" id="optGrid">';
       q.options.forEach(function(opt, i){
         html += '<button class="opt-btn" data-opt="'+i+'">'+escapeHtml(opt)+'</button>';
