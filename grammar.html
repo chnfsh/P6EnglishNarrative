@@ -153,6 +153,11 @@
   .opt-btn.correct{background:var(--green-soft); border-color:var(--green); color:var(--green); font-weight:600;}
   .opt-btn.wrong{background:var(--red-soft); border-color:var(--red); color:var(--red); font-weight:600;}
   .opt-btn.dim{opacity:.5;}
+  .opt-btn.selected{background:var(--gold); color:#fff; border-color:var(--gold); font-weight:600;}
+  .grouped-items{display:flex; flex-direction:column; gap:20px; text-align:left; width:100%;}
+  .grouped-item{border-top:1px dashed var(--rule); padding-top:16px;}
+  .grouped-item:first-child{border-top:none; padding-top:0;}
+  .grouped-item .sentence{font-size:16px; margin-bottom:12px;}
   .correction-instruction{
     font-size:12.5px; color:var(--ink-soft); font-style:italic; margin-bottom:16px; line-height:1.6;
     border-left:3px solid var(--gold); padding-left:10px; text-align:left;
@@ -327,22 +332,42 @@
       sentence:"The murderer was [[blank]] last night.",
       options:["hang","hanged","hung","hanging"], answer:"hanged",
       note:"表示「处以绞刑」这个特定意思时，过去分词用规则变化 hanged，而不是 hung（hung 用于物品悬挂）。" },
-    { id:'comparative-30', category:'comparative',
-      sentence:"Foxy behaves [[blank]] than Foxso.",
-      options:["crafty","craftier","more crafty","more craftily"], answer:"more craftily",
-      note:"behaves 是动词，要用副词修饰；craftily 的比较级是 more craftily。" },
+    { id:'group-29-30', category:'comparative', type:'grouped',
+      items:[
+        { sentence:"Foxy is [[blank]] than Foxso.", options:["crafty","craftier","more crafty","more craftily"], answer:"craftier" },
+        { sentence:"Foxy behaves [[blank]] than Foxso.", options:["crafty","craftier","more crafty","more craftily"], answer:"more craftily" }
+      ],
+      note:"is是连系动词，后面接形容词，比较级用craftier；behaves是动作动词，要用副词修饰，比较级用more craftily。两句结构很像但词性要求不同，要仔细看是连系动词还是动作动词。" },
     { id:'comparative-31', category:'comparative',
       sentence:"When the wind started blowing, the fire burnt [[blank]].",
-      options:["fiercer","fiercely","more fiercely","most fiercely"], answer:"fiercely",
-      note:"burnt 是动词，要用副词修饰；此处不是比较句，用原级 fiercely 即可。" },
+      options:["fiercer","fiercely","more fiercely","most fiercely"], answer:"more fiercely",
+      note:"When the wind started blowing暗示了火势因为风而变得更猛烈，是比较的语境（跟之前相比），burnt是动词要用副词修饰，所以用副词的比较级 more fiercely。" },
     { id:'determiner-24', category:'determiner',
       sentence:"([[blank]]) students blamed each other for the mistake.",
-      options:["All","Both","Each","Every"], answer:"All",
-      note:"人数多于两人时用 All；如果原题明确是「两人」互相指责，则应选 Both——这一题请对照原图核实人数提示。" },
-    { id:'preposition-26', category:'preposition',
-      sentence:"I am disappointed [[blank]] your lying habits.",
-      options:["at","in","on","with"], answer:"with",
-      note:"disappointed with 表示因某人的行为、习惯而感到失望。" },
+      options:["All","Both","Each","Every"], answer:"Both",
+      note:"each other暗示恰好是两人互相指责，人数为2时要用Both，不用All（All用于人数多于两人的情况）。" },
+    { id:'group-25-26', category:'preposition', type:'grouped',
+      items:[
+        { sentence:"I am disappointed [[blank]] you. How could you lie?", options:["at","in","on","with"], answer:"with" },
+        { sentence:"I am disappointed [[blank]] your lying habits.", options:["at","in","on","with"], answer:"with" }
+      ],
+      note:"disappointed with表示因某人（的行为/习惯）而感到失望，两句都用同一个搭配with，不用at/in/on。" },
+    { id:'irregular-lielay-50', category:'irregular',
+      sentence:"The silly boy [[blank]] on the road for three hours.",
+      options:["lie","lay","laid","lain"], answer:"lay",
+      note:"lie（躺，不及物动词）的过去式是lay；句子没有助动词has，用简单过去式lay。" },
+    { id:'irregular-lielay-51', category:'irregular',
+      sentence:"The silly boy has [[blank]] on the road for three hours.",
+      options:["lie","lay","laid","lain"], answer:"lain",
+      note:"lie（躺，不及物动词）的过去分词是lain；句子有助动词has，用过去分词lain。" },
+    { id:'irregular-lielay-52', category:'irregular',
+      sentence:"The hardworking hen [[blank]] many eggs this morning.",
+      options:["lie","lay","laid","lain"], answer:"laid",
+      note:"lay（下蛋，及物动词，跟lie不是同一个词）的过去式是laid；句子没有助动词has，用简单过去式laid。" },
+    { id:'irregular-lielay-53', category:'irregular',
+      sentence:"It has in fact [[blank]] many eggs.",
+      options:["lie","lay","laid","lain"], answer:"laid",
+      note:"lay（下蛋，及物动词）的过去分词也是laid（跟过去式同形）；句子有助动词has，同样用laid。" },
     { id:'fixed-58', category:'fixed',
       sentence:"Try as he [[blank]], Polly could not open the door.",
       options:["could","ought","might","would"], answer:"might",
@@ -629,6 +654,8 @@
       sentenceHtml = sentenceWithErrorsHtml(q.sentence, q.blanks);
     } else if(q.type === 'rewrite'){
       sentenceHtml = escapeHtml(q.original)+' <span style="color:var(--gold);">→ ('+escapeHtml(q.starterHint)+')</span>';
+    } else if(q.type === 'grouped'){
+      sentenceHtml = q.items.map(function(it){ return sentenceWithBlank(it.sentence, '<span class="blank">____</span>'); }).join('<br>');
     } else if(q.targetWord){
       sentenceHtml = sentenceWithUnderline(q.sentence, q.targetWord);
     } else {
@@ -713,6 +740,34 @@
       html += '<div class="rewrite-original">'+escapeHtml(q.original)+'</div>';
       html += '<div class="rewrite-hint">Rewrite using: <b>'+escapeHtml(q.starterHint)+'</b>. Your answer must be in one sentence with the same meaning.</div>';
       html += '<textarea class="rewrite-input'+(reviewAnswered?(rewriteOk?' correct':' wrong'):'')+'" id="rewriteInput" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Write your full sentence here" '+(reviewAnswered?'disabled':'')+'>'+(reviewAnswered?escapeHtml(q._typed||''):'')+'</textarea>';
+    } else if(qType === 'grouped'){
+      if(!reviewAnswered && !q._groupStarted){
+        q._groupChoices = [];
+        q._groupStarted = true;
+      }
+      html += '<div class="grouped-items">';
+      q.items.forEach(function(item, gi){
+        var chosen = q._groupChoices ? q._groupChoices[gi] : undefined;
+        html += '<div class="grouped-item" data-gi="'+gi+'">';
+        html += '<div class="sentence">'+sentenceWithBlank(item.sentence, '<span class="blank-slot">&nbsp;</span>')+'</div>';
+        html += '<div class="opt-grid">';
+        item.options.forEach(function(opt, oi){
+          var cls = 'opt-btn';
+          var disabled = false;
+          if(reviewAnswered){
+            if(opt === item.answer) cls += ' correct';
+            else if(opt === chosen) cls += ' wrong';
+            else cls += ' dim';
+            disabled = true;
+          } else if(chosen !== undefined){
+            cls += (opt === chosen) ? ' selected' : ' dim';
+            disabled = true;
+          }
+          html += '<button class="'+cls+'" data-gi="'+gi+'" data-oi="'+oi+'" '+(disabled?'disabled':'')+'>'+escapeHtml(opt)+'</button>';
+        });
+        html += '</div></div>';
+      });
+      html += '</div>';
     } else {
       var mcqSentenceHtml = q.targetWord
         ? sentenceWithUnderline(q.sentence, q.targetWord)
@@ -743,6 +798,36 @@
     app.innerHTML = html;
 
     document.getElementById('backHome').onclick = function(){ go({name:'home'}); };
+
+    if(qType === 'grouped'){
+      if(!reviewAnswered){
+        var groupBtns = app.querySelectorAll('.grouped-item .opt-btn');
+        Array.prototype.forEach.call(groupBtns, function(btn){
+          btn.onclick = function(){
+            var gi = parseInt(btn.getAttribute('data-gi'),10);
+            var oi = parseInt(btn.getAttribute('data-oi'),10);
+            var opt = q.items[gi].options[oi];
+            q._groupChoices[gi] = opt;
+            var allChosen = q.items.every(function(it, idx){ return q._groupChoices[idx] !== undefined; });
+            if(allChosen){
+              var allCorrect = q.items.every(function(it, idx){ return q._groupChoices[idx] === it.answer; });
+              reviewAnswered = true;
+              answerReview(q, allCorrect);
+            } else {
+              renderReview();
+            }
+          };
+        });
+      }
+      var nextBtnG = document.getElementById('nextBtn');
+      if(nextBtnG) nextBtnG.onclick = function(){
+        q._groupStarted = false;
+        reviewIdx++;
+        reviewAnswered = false;
+        renderReview();
+      };
+      return;
+    }
 
     if(qType === 'correction'){
       var submitBtn = document.getElementById('submitCorrectionBtn');
