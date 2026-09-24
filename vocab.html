@@ -905,8 +905,12 @@
         reviewResults.advanced++;
       }
     } else {
+      // A slip at round 5 or 6 (checkpointIndex 4 or 5) doesn't send the word all
+      // the way back to round 1 — it only drops back to the start of round 5.
+      // A slip during rounds 1-4 still resets fully to round 1, as before.
+      var floorIndex = (w.checkpointIndex >= 4) ? 4 : 0;
       w.cycleStart = todayStr();
-      w.checkpointIndex = 0;
+      w.checkpointIndex = floorIndex;
       w.mastered = false;
       reviewResults.reset++;
     }
