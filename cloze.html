@@ -62,6 +62,14 @@
     display:flex; align-items:center; justify-content:center; padding:0 3px;
     font-family: Georgia, serif;
   }
+  .lang-switch{
+    display:flex; border:1.5px solid var(--ink); border-radius:999px; overflow:hidden;
+  }
+  .lang-opt{
+    border:none; background:#fff; color:var(--ink); font-size:12px; font-weight:700;
+    padding:6px 13px; cursor:pointer; font-family:Georgia,serif; letter-spacing:.5px;
+  }
+  .lang-opt.active{ background:var(--ink); color:#fff; }
 
   h1.page-title{font-size:20px; margin:22px 0 4px; letter-spacing:.3px;}
   p.page-sub{color:var(--ink-soft); font-size:13.5px; margin:0 0 20px; line-height:1.6;}
@@ -290,9 +298,11 @@
     </div>
     <div class="nav-btns">
       <button class="pill-btn" id="navHome"><span id="navHomeLabel">全部篇章</span></button>
-      <button class="pill-btn" id="navWrong"><span id="navWrongLabel">错题本</span><span class="badge-count hidden" id="wrongCountBadge">0</span></button>
       <button class="pill-btn" id="navCurated"><span id="navCuratedLabel">精选错题专区</span></button>
-      <button class="pill-btn" id="langToggle">中文</button>
+      <div class="lang-switch" id="langSwitch">
+        <button class="lang-opt" data-lang="en" id="langOptEn">EN</button>
+        <button class="lang-opt" data-lang="zh" id="langOptZh">CN</button>
+      </div>
       <a class="back" href="index.html" id="backToIndexLink">← 返回专练首页</a>
     </div>
   </div>
@@ -376,8 +386,7 @@
   var CURATED_MAP = {};
   CURATED_PASSAGES.forEach(function(p){ CURATED_MAP[p.id] = p; });
 
-  var LS_PROGRESS = 'p6cloze_progress_v1';
-  var LS_WRONGBOOK = 'p6cloze_wrongbook_v1';
+  var LS_MAIN_PROGRESS = 'p6cloze_main_progress_v1';
   var LS_CURATED = 'p6cloze_curated_v1';
   var LS_CURATED_META = 'p6cloze_curated_meta_v1';
 
@@ -391,13 +400,11 @@
     try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){}
   }
 
-  var progress = loadJSON(LS_PROGRESS, {});     // { passageId: {best:0, attempts:0} }
-  var wrongBook = loadJSON(LS_WRONGBOOK, []);   // [ {passageId, blank, correct:[..], yourAnswer, wrongCount, updatedAt} ]
+  var mainProgress = loadJSON(LS_MAIN_PROGRESS, {}); // { "passageId:blank": {streak:0, mastered:false, updatedAt, lastAnswer, lastCorrect} }
   var curatedProgress = loadJSON(LS_CURATED, {}); // { "passageId:blank": {streak:0, mastered:false} }
   var curatedMeta = loadJSON(LS_CURATED_META, {}); // { passageId: {roundsCompleted:0, lastRoundAt:0} }
 
-  function persistProgress(){ saveJSON(LS_PROGRESS, progress); }
-  function persistWrongBook(){ saveJSON(LS_WRONGBOOK, wrongBook); }
+  function persistMainProgress(){ saveJSON(LS_MAIN_PROGRESS, mainProgress); }
   function persistCurated(){ saveJSON(LS_CURATED, curatedProgress); }
   function persistCuratedMeta(){ saveJSON(LS_CURATED_META, curatedMeta); }
 
@@ -420,42 +427,7 @@
     return accepted.some(function(a){ return normalize(a) === n; });
   }
 
-  function updateWrongBadge(){
-    var badge = document.getElementById('wrongCountBadge');
-    if(wrongBook.length > 0){
-      badge.textContent = wrongBook.length > 99 ? '99+' : wrongBook.length;
-      badge.classList.remove('hidden');
-    } else {
-      badge.classList.add('hidden');
-    }
-  }
-
-  function scoreChipClass(pct){
-    if(pct >= 80) return 'good';
-    if(pct >= 50) return 'mid';
-    return 'low';
-  }
-
-  // ---------- context sentence extraction ----------
-  function paragraphContaining(passage, blankNum){
-    var paras = passage.text.split(/\n\n+/);
-    var token = '[['+blankNum+']]';
-    for(var i=0;i<paras.length;i++){
-      if(paras[i].indexOf(token) !== -1) return paras[i];
-    }
-    return passage.text;
-  }
-  function shortContext(passage, blankNum){
-    var para = paragraphContaining(passage, blankNum);
-    // split into sentences roughly, keep the one with the blank plus a little neighbor text
-    var token = '[['+blankNum+']]';
-    var idx = para.indexOf(token);
-    var start = Math.max(0, para.lastIndexOf('.', idx - 40) + 1);
-    var end = para.indexOf('.', idx + token.length + 40);
-    if(end === -1) end = Math.min(para.length, idx + token.length + 60);
-    var snippet = para.slice(start, end + 1).trim();
-    return snippet.replace(token, '<b>____</b>');
-  }
+  function mainKey(passageId, num){ return passageId+':'+num; }
 
   // ---------- router ----------
   var app = document.getElementById('app');
@@ -469,45 +441,44 @@
 
   document.getElementById('navHome').onclick = function(){ go({name:'home'}); };
   document.getElementById('brandHome').onclick = function(){ go({name:'home'}); };
-  document.getElementById('navWrong').onclick = function(){ go({name:'wrongbook'}); };
   document.getElementById('navCurated').onclick = function(){ go({name:'curatedHome'}); };
-  document.getElementById('langToggle').onclick = function(){
-    lang = (lang === 'en') ? 'zh' : 'en';
-    persistLang();
-    updateLangToggleLabel();
-    updateChromeLabels();
-    render();
-  };
-  function updateLangToggleLabel(){
-    document.getElementById('langToggle').textContent = tr('中文', 'English');
+  Array.prototype.forEach.call(document.querySelectorAll('.lang-opt'), function(btn){
+    btn.onclick = function(){
+      var newLang = btn.getAttribute('data-lang');
+      if(newLang === lang) return;
+      lang = newLang;
+      persistLang();
+      updateLangSwitchUI();
+      updateChromeLabels();
+      render();
+    };
+  });
+  function updateLangSwitchUI(){
+    document.getElementById('langOptEn').classList.toggle('active', lang === 'en');
+    document.getElementById('langOptZh').classList.toggle('active', lang === 'zh');
   }
   function updateChromeLabels(){
     document.getElementById('brandTitle').textContent = tr('Comprehension Cloze Practice', '综合填空 · Cloze 专项训练');
     document.getElementById('navHomeLabel').textContent = tr('All Passages', '全部篇章');
-    document.getElementById('navWrongLabel').textContent = tr('Wrong Answers', '错题本');
     document.getElementById('navCuratedLabel').textContent = tr('Curated Review', '精选错题专区');
     document.getElementById('backToIndexLink').textContent = tr('← Back to Hub', '← 返回专练首页');
   }
-  updateLangToggleLabel();
+  updateLangSwitchUI();
   updateChromeLabels();
 
   function setActiveNav(){
-    document.getElementById('navHome').classList.toggle('active', route.name==='home');
-    document.getElementById('navWrong').classList.toggle('active', route.name==='wrongbook');
+    document.getElementById('navHome').classList.toggle('active', route.name==='home' || route.name==='passage');
     document.getElementById('navCurated').classList.toggle('active', route.name==='curatedHome' || route.name==='curatedPassage');
   }
 
   function render(){
     setActiveNav();
-    updateWrongBadge();
-    if(route.name !== 'curatedPassage' && typeof curatedBarCleanup === 'function'){
+    if(route.name !== 'curatedPassage' && route.name !== 'passage' && typeof curatedBarCleanup === 'function'){
       curatedBarCleanup();
       curatedBarCleanup = null;
     }
     if(route.name === 'home') return renderHome();
     if(route.name === 'passage') return renderPassage(route.id, {reviewOnly:false});
-    if(route.name === 'wrongbook') return renderWrongBook();
-    if(route.name === 'wrongquiz') return renderWrongQuiz();
     if(route.name === 'curatedHome') return renderCuratedHome();
     if(route.name === 'curatedPassage') return renderCuratedPassage(route.id);
   }
@@ -520,8 +491,8 @@
     var html = '';
     html += '<h1 class="page-title">'+tr('Choose a Passage','选择一篇练习')+'</h1>';
     html += '<p class="page-sub">'+tr(
-      PASSAGES.length+' Primary School English Comprehension Cloze passages, grouped by year. Some blanks accept more than one correct answer — the system will try to recognise reasonable synonyms. Wrong answers are automatically added to your Wrong Answers list.',
-      '共 '+PASSAGES.length+' 篇小学英语综合填空 (Comprehension Cloze)，按年份分组。每空可能有不止一个正确答案，系统会尽量识别近义的合理答案。答错的题目会自动收录进「错题本」。'
+      PASSAGES.length+' Primary School English Comprehension Cloze passages, grouped by year. Some blanks accept more than one correct answer — the system will try to recognise reasonable synonyms. Each blank needs '+REQUIRED_MAIN_STREAK+' consecutive correct answers to turn green and be retired from testing — progress is tracked automatically on this device as long as you don\'t clear your browser data.',
+      '共 '+PASSAGES.length+' 篇小学英语综合填空 (Comprehension Cloze)，按年份分组。每空可能有不止一个正确答案，系统会尽量识别近义的合理答案。每个空格连续答对 '+REQUIRED_MAIN_STREAK+' 次会变绿并不再考察——只要不清理浏览器缓存，本机会自动记住学习进度。'
     )+'</p>';
 
     var byYear = {};
@@ -535,7 +506,7 @@
 
     years.forEach(function(y, yi){
       var list = byYear[y];
-      var doneCount = list.filter(function(p){ return progress[p.id] && progress[p.id].attempts > 0; }).length;
+      var doneCount = list.filter(function(p){ return mainStats(p).lastUpdatedAt > 0; }).length;
       var openAttr = (yi === years.length - 1) ? ' open' : '';
       var yLabel = (lang === 'en') ? (YEAR_LABEL_EN[y] || y) : y;
       html += '<details class="year-section"'+openAttr+' data-year="'+escapeHtml(y)+'">';
@@ -543,18 +514,17 @@
             + '<span class="yr-meta">'+tr(list.length+' passages · '+doneCount+' practised', list.length+' 篇 · 已练习 '+doneCount+' 篇')+' <span class="chevron">▶</span></span></summary>';
       html += '<div class="grid-inner"><div class="grid">';
       list.forEach(function(p){
-        var prog = progress[p.id];
-        var total = Object.keys(p.answers).length;
+        var stats = mainStats(p);
         var chip = '';
-        if(prog && prog.attempts > 0){
-          var pct = Math.round(prog.best / total * 100);
-          chip = '<span class="score-chip '+scoreChipClass(pct)+'">'+tr('Best','最佳')+' '+prog.best+'/'+total+'</span>';
+        if(stats.lastUpdatedAt > 0){
+          var chipClass = stats.mastered === stats.total ? 'good' : (stats.mastered > 0 ? 'mid' : '');
+          chip = '<span class="score-chip '+chipClass+'">'+tr('Mastered','已掌握')+' '+stats.mastered+'/'+stats.total+'</span>';
         } else {
           chip = '<span class="score-chip">'+tr('Not attempted','未练习')+'</span>';
         }
         html += '<div class="card" data-id="'+p.id+'">'
           + (p.partial ? '<div class="partial-flag">'+tr('partial','残卷')+'</div>' : '')
-          + '<div class="idx">'+total+' BLANKS'+(p.note ? '<span class="note-flag">'+tr('reconstructed','扫描还原')+'</span>' : '')+'</div>'
+          + '<div class="idx">'+stats.total+' BLANKS'+(p.note ? '<span class="note-flag">'+tr('reconstructed','扫描还原')+'</span>' : '')+'</div>'
           + '<h3>'+escapeHtml(titleOf(p))+'</h3>'
           + '<div class="meta">'+chip+'</div>'
           + '</div>';
@@ -575,14 +545,26 @@
   }
 
   // ---------- PASSAGE PRACTICE ----------
-  function buildPassageHTML(passage, opts){
-    opts = opts || {};
+  var REQUIRED_MAIN_STREAK = 2;
+
+  function mainStats(passage){
+    var nums = Object.keys(passage.answers);
+    var masteredCount = 0;
+    var lastUpdatedAt = 0;
+    nums.forEach(function(num){
+      var e = mainProgress[mainKey(passage.id, num)];
+      if(e && e.mastered) masteredCount++;
+      if(e && e.updatedAt && e.updatedAt > lastUpdatedAt) lastUpdatedAt = e.updatedAt;
+    });
+    return { total: nums.length, mastered: masteredCount, lastUpdatedAt: lastUpdatedAt };
+  }
+
+  function buildPassageHTML(passage){
     var paras = passage.text.split(/\n\n+/);
     var body = paras.map(function(para){
       var rendered = escapeHtml(para).replace(/\[\[(\d+)\]\]/g, function(_, num){
         return '{{BLANK:'+num+'}}';
       });
-      // now split on the blank markers to inject real HTML (avoids escaping issues)
       var parts = rendered.split(/\{\{BLANK:(\d+)\}\}/);
       var out = '';
       for(var i=0;i<parts.length;i++){
@@ -590,12 +572,17 @@
           out += parts[i];
         } else {
           var num = parts[i];
-          out += '<span class="blank-wrap" data-blank="'+num+'">'
-               + '<span class="blank-num">('+num+')</span>'
-               + '<input class="blank-input" type="text" autocomplete="off" autocapitalize="off" '
-               + 'spellcheck="false" data-blank-input="'+num+'" />'
-               + '<span class="mark-icon"></span>'
-               + '</span>';
+          var entry = mainProgress[mainKey(passage.id, num)];
+          if(entry && entry.mastered){
+            out += '<span class="mastered-word">'+escapeHtml(passage.answers[num][0])+'<sup class="mw-check">✓ '+tr('Mastered','已掌握')+'</sup></span>';
+          } else {
+            out += '<span class="blank-wrap" data-blank="'+num+'">'
+                 + '<span class="blank-num">('+num+')</span>'
+                 + '<input class="blank-input" type="text" autocomplete="off" autocapitalize="off" '
+                 + 'spellcheck="false" data-blank-input="'+num+'" />'
+                 + '<span class="mark-icon"></span>'
+                 + '</span>';
+          }
         }
       }
       return '<p>'+out+'</p>';
@@ -603,10 +590,49 @@
     return body;
   }
 
+  function buildMainTraceHtml(passage){
+    var nums = Object.keys(passage.answers);
+    var rows = nums.map(function(num){
+      var entry = mainProgress[mainKey(passage.id, num)];
+      if(!entry || !entry.updatedAt){
+        return '<div class="trace-row"><span class="trace-num">('+num+')</span>'
+          + '<span class="trace-status untried">'+tr('Not attempted yet','尚未作答')+'</span></div>';
+      }
+      var statusHtml;
+      if(entry.mastered){
+        statusHtml = '<span class="trace-status mastered">✓ '+tr('Mastered','已掌握')+'</span>';
+      } else if(entry.lastCorrect){
+        statusHtml = '<span class="trace-status correct">✓ '+tr('Correct','答对')+'</span>';
+      } else {
+        statusHtml = '<span class="trace-status wrong">✗ '+tr('Wrong (correct answer: ','答错（正确答案：')+escapeHtml(passage.answers[num].join(' / '))+tr(')','）')+'</span>';
+      }
+      var streakText = entry.mastered ? '' : '　'+tr((entry.streak||0)+'/'+REQUIRED_MAIN_STREAK+' correct in a row', '连续答对 '+(entry.streak||0)+'/'+REQUIRED_MAIN_STREAK+' 次');
+      return '<div class="trace-row"><span class="trace-num">('+num+')</span>'
+        + '<span>'+tr('Last answer: ','上次填写：')+'<b>'+escapeHtml(entry.lastAnswer || tr('(blank)','(空白)'))+'</b></span>'
+        + statusHtml
+        + '<span>'+streakText+'</span>'
+        + '<span class="trace-time">'+formatLastPracticed(entry.updatedAt)+'</span>'
+        + '</div>';
+    }).join('');
+    return '<div class="trace-panel"><div class="trace-title">'+tr('Last Attempt Log','上次练习记录')+'</div>'+rows+'</div>';
+  }
+
   function renderPassage(id){
     var passage = PASSAGE_MAP[id];
     if(!passage){ go({name:'home'}); return; }
-    var total = Object.keys(passage.answers).length;
+    var stats = mainStats(passage);
+
+    function bindTraceToggle(){
+      document.getElementById('mainToggleTraceBtn').onclick = function(){
+        var panel = document.getElementById('curatedTracePanel');
+        var willShow = panel.classList.contains('hidden');
+        panel.classList.toggle('hidden');
+        this.textContent = willShow ? tr('Hide','收起') : tr('View last attempt','查看上次作答');
+        if(willShow){
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      };
+    }
 
     var html = '';
     html += '<div class="back-link" id="backHome">'+tr('← Back to passage list','← 返回篇章列表')+'</div>';
@@ -615,21 +641,48 @@
           + '<div class="credit">'+escapeHtml(passage.credit||'')+'</div>'
           + (passage.note ? '<div class="credit" style="color:#8a2f2b;">⚠ '+escapeHtml(passage.note)+'</div>' : '')
           + '</div>'
-          + '<div class="marks-tag">'+total+' marks</div></div>';
+          + '<div class="marks-tag">'+tr('Mastered','已掌握')+' '+stats.mastered+'/'+stats.total+'</div></div>';
+
+    html += '<div id="curatedTracePanel" class="hidden">'+buildMainTraceHtml(passage)+'</div>';
+
+    if(stats.mastered === stats.total){
+      html += '<div class="passage-text">'+buildPassageHTML(passage)+'</div>';
+      html += '<div class="empty-state" style="padding:24px 10px;"><span class="big">🎉</span>'+tr('Every blank in this passage has been answered correctly '+REQUIRED_MAIN_STREAK+' times in a row — mastered!','这一篇的所有空格都已连续答对 '+REQUIRED_MAIN_STREAK+' 次了，已经掌握！')+'</div>';
+      html += '<div class="curated-bottom-spacer"></div>';
+      html += '</div>';
+      html += '<button class="scroll-to-bottom-btn" id="curatedScrollBottomBtn" title="'+tr('Scroll to bottom','一键滚动到底部')+'" aria-label="'+tr('Scroll to bottom','滚动到底部')+'">↓</button>';
+      html += '<div class="action-row curated-float-bar" id="curatedActionBar">'
+            + '<button class="btn secondary" id="mainToggleTraceBtn">'+tr('View last attempt','查看上次作答')+'</button>'
+            + '<button class="btn secondary" id="resetBtn">'+tr('Clear & Redo','清零重做')+'</button>'
+            + '</div>';
+      app.innerHTML = html;
+      document.getElementById('backHome').onclick = function(){ go({name:'home'}); };
+      bindTraceToggle();
+      document.getElementById('resetBtn').onclick = function(){ resetMainPassage(id); };
+      setupCuratedScrollBottom();
+      setupCuratedFloatingBar();
+      return;
+    }
+
     html += '<div class="passage-text" id="passageText">'+buildPassageHTML(passage)+'</div>';
     html += '<div id="stampZone"></div>';
-    html += '<div class="action-row">'
-          + '<button class="btn" id="checkBtn">'+tr('Submit / Check','提交检查 Check')+'</button>'
-          + '<button class="btn secondary" id="resetBtn">'+tr('Clear & Redo','清空重做')+'</button>'
-          + '</div>';
+    html += '<div class="curated-bottom-spacer"></div>';
     html += '</div>';
+    html += '<button class="scroll-to-bottom-btn" id="curatedScrollBottomBtn" title="'+tr('Scroll to bottom','一键滚动到底部')+'" aria-label="'+tr('Scroll to bottom','滚动到底部')+'">↓</button>';
+    html += '<div class="action-row curated-float-bar" id="curatedActionBar">'
+          + '<button class="btn" id="checkBtn">'+tr('Submit / Check','提交检查 Check')+'</button>'
+          + '<button class="btn secondary" id="mainToggleTraceBtn">'+tr('View last attempt','查看上次作答')+'</button>'
+          + '<button class="btn secondary" id="resetBtn">'+tr('Clear & Redo','清零重做')+'</button>'
+          + '</div>';
     app.innerHTML = html;
 
     document.getElementById('backHome').onclick = function(){ go({name:'home'}); };
-    document.getElementById('resetBtn').onclick = function(){ renderPassage(id); };
     document.getElementById('checkBtn').onclick = function(){ gradePassage(passage); };
+    document.getElementById('resetBtn').onclick = function(){ resetMainPassage(id); };
+    bindTraceToggle();
+    setupCuratedScrollBottom();
+    setupCuratedFloatingBar();
 
-    // enter key moves to next blank
     var inputs = Array.prototype.slice.call(app.querySelectorAll('input.blank-input'));
     inputs.forEach(function(inp, idx){
       inp.addEventListener('keydown', function(e){
@@ -642,103 +695,76 @@
     });
   }
 
-  function gradePassage(passage){
-    var total = Object.keys(passage.answers).length;
-    var correctCount = 0;
-    var wrongEntriesThisRound = [];
-
+  function resetMainPassage(id){
+    var passage = PASSAGE_MAP[id];
+    if(!passage) return;
     Object.keys(passage.answers).forEach(function(num){
-      var wrap = app.querySelector('.blank-wrap[data-blank="'+num+'"]');
+      delete mainProgress[mainKey(id, num)];
+    });
+    persistMainProgress();
+    renderPassage(id);
+  }
+
+  function gradePassage(passage){
+    var wraps = Array.prototype.slice.call(app.querySelectorAll('#passageText .blank-wrap'));
+    var correctCount = 0;
+    var justMastered = 0;
+
+    wraps.forEach(function(wrap){
+      var num = wrap.getAttribute('data-blank');
       var input = wrap.querySelector('input.blank-input');
       var icon = wrap.querySelector('.mark-icon');
       var val = input.value;
       var ok = isCorrect(passage, num, val);
       input.disabled = true;
-      wrap.classList.remove('correct','wrong');
-      var existingHint = wrap.querySelector('.correct-hint');
-      if(existingHint) existingHint.remove();
+
+      var key = mainKey(passage.id, num);
+      var entry = mainProgress[key] || { streak:0, mastered:false };
+      entry.updatedAt = Date.now();
+      entry.lastAnswer = val;
+      entry.lastCorrect = ok;
 
       if(ok){
         correctCount++;
+        entry.streak = (entry.streak || 0) + 1;
         wrap.classList.add('correct');
-        icon.textContent = '✓';
-        icon.className = 'mark-icon ok';
-        registerCorrectAnswer(passage.id, num);
+        icon.textContent = '✓'; icon.className = 'mark-icon ok';
+        if(entry.streak >= REQUIRED_MAIN_STREAK){
+          entry.mastered = true;
+          justMastered++;
+        }
       } else {
+        entry.streak = 0;
+        entry.mastered = false;
         wrap.classList.add('wrong');
-        icon.textContent = '✗';
-        icon.className = 'mark-icon no';
+        icon.textContent = '✗'; icon.className = 'mark-icon no';
         var hint = document.createElement('span');
         hint.className = 'correct-hint';
         hint.textContent = tr('Reference answer: ','参考答案：') + passage.answers[num].join(' / ');
         wrap.appendChild(hint);
-        wrongEntriesThisRound.push({num: num, val: val});
-        addToWrongBook(passage, num, val);
       }
+      mainProgress[key] = entry;
     });
 
-    // update progress
-    var prev = progress[passage.id] || {best:0, attempts:0};
-    prev.best = Math.max(prev.best, correctCount);
-    prev.attempts += 1;
-    progress[passage.id] = prev;
-    persistProgress();
-    persistWrongBook();
-    updateWrongBadge();
+    persistMainProgress();
 
-    // stamp
-    var pct = Math.round(correctCount/total*100);
+    var total = wraps.length;
     var stampZone = document.getElementById('stampZone');
-    var msg = pct === 100
-      ? tr('Perfect score!','全对！满分！')
-      : (pct >= 80 ? tr('Well done — keep it up.','很不错，再接再厉。')
-      : (pct >= 50 ? tr('Room to improve. Mistakes have been added to your Wrong Answers.','还有进步空间，错题已收进错题本。')
-      : tr("Don't worry, a few more tries will help. Mistakes have been added to your Wrong Answers.",'别灰心，多练几次就好，错题已收进错题本。')));
+    var msg;
+    if(justMastered > 0){
+      msg = tr(justMastered+' blank(s) just hit '+REQUIRED_MAIN_STREAK+' correct in a row — mastered!', '有 '+justMastered+' 处已经连续答对 '+REQUIRED_MAIN_STREAK+' 次，掌握了！');
+    } else if(correctCount === total){
+      msg = tr('All correct! Keep it up — a few more rounds like this and it will be mastered.','全部答对！继续保持，再连续答对几次就能掌握。');
+    } else {
+      msg = tr('Keep going — the ones you missed have been reset to zero.','继续加油，答错的位置进度已清零重新计。');
+    }
     stampZone.innerHTML = '<div class="stamp-zone">'
-      + '<div class="stamp"><b>'+correctCount+'/'+total+'</b><span>SCORE</span></div>'
-      + '<div class="stamp-msg">'+msg+(wrongEntriesThisRound.length? '<br>'+tr(wrongEntriesThisRound.length+' wrong this round.', '本次错 '+wrongEntriesThisRound.length+' 题。') : '')+'</div>'
+      + '<div class="stamp"><b>'+correctCount+'/'+total+'</b><span>'+tr('THIS ROUND','本轮')+'</span></div>'
+      + '<div class="stamp-msg">'+msg+'</div>'
       + '</div>';
 
     document.getElementById('checkBtn').disabled = true;
-    showToast(tr('Graded: ','已批改：')+correctCount+' / '+total);
-  }
-
-  function addToWrongBook(passage, num, yourAnswer){
-    var idx = wrongBook.findIndex(function(w){ return w.passageId===passage.id && w.blank===num; });
-    var entry = {
-      passageId: passage.id,
-      passageTitle: passage.title,
-      blank: num,
-      correct: passage.answers[num],
-      yourAnswer: yourAnswer || tr('(left blank)','(空白未作答)'),
-      wrongCount: 1,
-      correctStreak: 0,
-      updatedAt: Date.now()
-    };
-    if(idx === -1){
-      wrongBook.push(entry);
-    } else {
-      wrongBook[idx].yourAnswer = entry.yourAnswer;
-      wrongBook[idx].wrongCount += 1;
-      wrongBook[idx].correctStreak = 0; // a wrong answer resets progress toward removal
-      wrongBook[idx].updatedAt = Date.now();
-    }
-  }
-  function removeFromWrongBook(passageId, num){
-    wrongBook = wrongBook.filter(function(w){ return !(w.passageId===passageId && w.blank===num); });
-  }
-  // A correct answer only removes the entry once it's been answered correctly
-  // twice (not necessarily consecutively across sessions, but a fresh wrong
-  // answer resets the streak back to 0).
-  var REQUIRED_CORRECT_STREAK = 2;
-  function registerCorrectAnswer(passageId, num){
-    var idx = wrongBook.findIndex(function(w){ return w.passageId===passageId && w.blank===num; });
-    if(idx === -1) return; // wasn't in the wrong book, nothing to do
-    wrongBook[idx].correctStreak = (wrongBook[idx].correctStreak || 0) + 1;
-    wrongBook[idx].updatedAt = Date.now();
-    if(wrongBook[idx].correctStreak >= REQUIRED_CORRECT_STREAK){
-      wrongBook.splice(idx, 1);
-    }
+    showToast(tr('This round: ','本轮：')+correctCount+' / '+total+' '+tr('correct','正确'));
   }
 
   // ---------- CURATED WRONG-QUESTION ZONE (practice + grading) ----------
@@ -1177,133 +1203,7 @@
     };
   }
 
-  // ---------- WRONG BOOK ----------
-  function renderWrongBook(){
-    var html = '';
-    html += '<h1 class="page-title">'+tr('Wrong Answers','错题本')+'</h1>';
-    html += '<p class="page-sub">'+tr(
-      'Collects the questions you\'ve gotten wrong across practice sessions. An item needs '+REQUIRED_CORRECT_STREAK+' consecutive correct answers to be removed; one correct answer records progress, but a fresh wrong answer resets it.',
-      '收录了历次练习中答错的题目。需要连续答对 '+REQUIRED_CORRECT_STREAK+' 次才会从错题本移除，只答对一次会先记录进度，若中途再答错则进度清零。'
-    )+'</p>';
-
-    if(wrongBook.length === 0){
-      html += '<div class="empty-state"><span class="big">📗</span>'+tr("No wrong answers yet — great job!<br>Try a passage from 'All Passages'.",'暂时没有错题，太棒了！<br>去「全部篇章」里练习一篇试试吧。')+'</div>';
-      app.innerHTML = html;
-      return;
-    }
-
-    html += '<div class="action-row" style="margin-bottom:18px;">'
-          + '<button class="btn" id="startWrongQuiz">'+tr('Start Wrong-Answer Review ('+wrongBook.length+' questions)','开始错题重练（共 '+wrongBook.length+' 题）')+'</button>'
-          + '</div>';
-
-    var byPassage = {};
-    wrongBook.forEach(function(w){
-      if(!byPassage[w.passageId]) byPassage[w.passageId] = [];
-      byPassage[w.passageId].push(w);
-    });
-
-    Object.keys(byPassage).forEach(function(pid){
-      var items = byPassage[pid];
-      var passage = PASSAGE_MAP[pid];
-      var displayTitle = passage ? titleOf(passage) : items[0].passageTitle;
-      html += '<div class="wb-group"><h4>'+escapeHtml(displayTitle)+' （'+items.length+' '+tr('questions','题')+'）</h4>';
-      items.sort(function(a,b){ return parseInt(a.blank)-parseInt(b.blank); });
-      items.forEach(function(w){
-        var ctx = passage ? shortContext(passage, w.blank) : '';
-        var streak = w.correctStreak || 0;
-        var streakNote = streak > 0
-          ? '<span class="streak-note">'+tr(streak+'/'+REQUIRED_CORRECT_STREAK+' correct in a row — one more to remove', '已连续答对 '+streak+'/'+REQUIRED_CORRECT_STREAK+' 次，再对一次即可移除')+'</span>'
-          : '';
-        html += '<div class="wb-item" data-pid="'+pid+'" data-blank="'+w.blank+'">'
-          + '<div class="ctx">('+w.blank+') '+ctx+'</div>'
-          + streakNote
-          + '<div class="ans-row"><div class="ans">'+tr('Your answer: ','你的答案：')+'<span class="yours">'+escapeHtml(w.yourAnswer)+'</span>　'+tr('Correct answer: ','正确答案：')+'<span class="right">'+escapeHtml(w.correct.join(' / '))+'</span></div>'
-          + '<button class="rm-btn" data-rm="1">'+tr('Remove','移除')+'</button></div>'
-          + '</div>';
-      });
-      html += '</div>';
-    });
-
-    app.innerHTML = html;
-    document.getElementById('startWrongQuiz').onclick = function(){ go({name:'wrongquiz'}); };
-    Array.prototype.forEach.call(app.querySelectorAll('.wb-item .rm-btn'), function(btn){
-      btn.onclick = function(){
-        var item = btn.closest('.wb-item');
-        removeFromWrongBook(item.getAttribute('data-pid'), item.getAttribute('data-blank'));
-        persistWrongBook();
-        renderWrongBook();
-        updateWrongBadge();
-      };
-    });
-  }
-
-  // ---------- WRONG QUIZ (targeted review) ----------
-  function renderWrongQuiz(){
-    if(wrongBook.length === 0){ go({name:'wrongbook'}); return; }
-    var html = '';
-    html += '<div class="back-link" id="backWB">'+tr('← Back to Wrong Answers','← 返回错题本')+'</div>';
-    html += '<span class="review-tag">'+tr('Wrong-Answer Review Mode','错题重练模式')+'</span>';
-    html += '<div class="paper-sheet"><div class="passage-text" id="wqBody">';
-
-    var snapshot = wrongBook.slice(); // snapshot so list doesn't shift mid-quiz
-    snapshot.forEach(function(w, i){
-      var passage = PASSAGE_MAP[w.passageId];
-      var displayTitle = passage ? titleOf(passage) : w.passageTitle;
-      var ctx = passage ? shortContext(passage, w.blank) : '';
-      html += '<p style="font-size:15px;">'
-        + '<span class="blank-num" style="font-size:11px;">'+(i+1)+'. ['+escapeHtml(displayTitle)+']</span> '
-        + ctx.replace('<b>____</b>',
-            '<span class="blank-wrap" data-pid="'+w.passageId+'" data-blank="'+w.blank+'">'
-            + '<input class="blank-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" />'
-            + '<span class="mark-icon"></span></span>')
-        + '</p>';
-    });
-    html += '</div>';
-    html += '<div class="action-row"><button class="btn" id="checkWQ">'+tr('Submit / Check','提交检查 Check')+'</button></div>';
-    html += '</div>';
-    app.innerHTML = html;
-    document.getElementById('backWB').onclick = function(){ go({name:'wrongbook'}); };
-    document.getElementById('checkWQ').onclick = function(){ gradeWrongQuiz(); };
-  }
-
-  function gradeWrongQuiz(){
-    var wraps = Array.prototype.slice.call(app.querySelectorAll('#wqBody .blank-wrap'));
-    var correctCount = 0;
-    wraps.forEach(function(wrap){
-      var pid = wrap.getAttribute('data-pid');
-      var blank = wrap.getAttribute('data-blank');
-      var passage = PASSAGE_MAP[pid];
-      var input = wrap.querySelector('input');
-      var icon = wrap.querySelector('.mark-icon');
-      var val = input.value;
-      var ok = passage && isCorrect(passage, blank, val);
-      input.disabled = true;
-      if(ok){
-        correctCount++;
-        wrap.classList.add('correct');
-        icon.textContent = '✓'; icon.className = 'mark-icon ok';
-        registerCorrectAnswer(pid, blank);
-      } else {
-        wrap.classList.add('wrong');
-        icon.textContent = '✗'; icon.className = 'mark-icon no';
-        if(passage) addToWrongBook(passage, blank, val);
-      }
-    });
-    persistWrongBook();
-    updateWrongBadge();
-    var total = wraps.length;
-    showToast(tr('This round: ','本轮重练：')+correctCount+' / '+total+' '+tr('mastered','已掌握'));
-    document.getElementById('checkWQ').disabled = true;
-    var backBtn = document.createElement('button');
-    backBtn.className = 'btn secondary';
-    backBtn.textContent = tr('Back to Wrong Answers','返回错题本');
-    backBtn.style.marginLeft = '8px';
-    backBtn.onclick = function(){ go({name:'wrongbook'}); };
-    document.querySelector('.action-row').appendChild(backBtn);
-  }
-
   // init
-  updateWrongBadge();
   render();
 })();
 </script>
