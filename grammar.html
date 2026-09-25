@@ -229,7 +229,7 @@
   // Review checkpoints, in days since the question's cycle-start date.
   // A wrong answer at ANY point resets the whole cycle back to day 0.
   // Requires 4 consecutive correct answers (i.e. clearing all 4 checkpoints) to be mastered.
-  var CHECKPOINTS = [1, 2, 4, 7];
+  var CHECKPOINTS = [1, 3, 7, 14];
   var EXAM_DATE = '2026-09-24';
 
   var CATEGORY_LABELS = {
@@ -588,7 +588,7 @@
 
     var html = '';
     html += '<h1 class="page-title">语法错题本</h1>';
-    html += '<p class="page-sub">每道题加入后，会在第 <b>1、2、4、7</b> 天各复习一次，连续 4 次答对即视为掌握；期间任何一次答错，都会整个重新从第 1 天开始计。题型包括选择题、改错题（拼写/语法）和句子改写题，混在一起随机抽考。</p>';
+    html += '<p class="page-sub">每道题加入后，会按记忆曲线规律在第 <b>1、3、7、14</b> 天各复习一次，连续 4 次答对即视为掌握；期间任何一次答错，都会整个重新从第 1 天开始计。题型包括选择题、改错题（拼写/语法）和句子改写题，混在一起随机抽考。</p>';
     html += examCountdownHtml();
 
     html += '<div class="stat-strip">'

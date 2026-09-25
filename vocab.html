@@ -260,7 +260,7 @@
   // Review checkpoints, in days since the word's cycle-start date.
   // Spacing loosely modelled on the Ebbinghaus forgetting curve.
   // 6 checkpoints = 6 consecutive correct spellings required for mastery.
-  var CHECKPOINTS = [1, 2, 4, 7, 11, 15];
+  var CHECKPOINTS = [1, 3, 7, 14, 30, 60];
   var EXAM_DATE = '2026-09-24';
 
   // Which testing method is used at each checkpoint (0-indexed).
@@ -374,7 +374,7 @@
 
     var html = '';
     html += '<h1 class="page-title">我的错词本</h1>';
-    html += '<p class="page-sub">每个新词加入后，会在第 <b>1、2、4、7、11、15</b> 天各默写一次，方式逐次升级：①看词+读音后隐去，露出首尾字母默写中间 ②看词+读音后隐去，整词默写 ③只听读音默写 ④只看音标默写 ⑤⑥随机抽①②③④中的一种再考——连续 6 次全部拼对才算掌握；期间任何一次拼错，都会整个重新从第 1 次开始计。标为"仅熟悉"的词不进入默写复习，只在词表里随时查看。</p>';
+    html += '<p class="page-sub">每个新词加入后，会按记忆曲线规律在第 <b>1、3、7、14、30、60</b> 天各默写一次，方式逐次升级：①看词+读音后隐去，露出首尾字母默写中间 ②看词+读音后隐去，整词默写 ③只听读音默写 ④只看音标默写 ⑤⑥随机抽①②③④中的一种再考——连续 6 次全部拼对才算掌握；期间任何一次拼错，都会整个重新从第 1 次开始计。标为"仅熟悉"的词不进入默写复习，只在词表里随时查看。</p>';
     html += examCountdownHtml();
 
     html += '<div class="stat-strip">'
