@@ -146,6 +146,21 @@
   }
   .passage-text{font-size:16px; line-height:2.15;}
   .passage-text p{margin:0 0 16px;}
+  .word-send-popup{
+    position:fixed; z-index:50; background:var(--ink); color:#fff; border-radius:6px;
+    padding:6px 8px; font-size:12.5px; display:flex; align-items:center; gap:8px;
+    box-shadow:0 6px 20px -6px rgba(0,0,0,.5); font-family:Georgia,serif;
+    transform:translate(-50%, -100%); white-space:nowrap;
+  }
+  .word-send-popup b{color:var(--gold); font-weight:700;}
+  .word-send-popup button{
+    background:var(--gold); color:#242422; border:none; border-radius:4px;
+    padding:4px 9px; font-size:12px; cursor:pointer; font-family:inherit; white-space:nowrap;
+  }
+  .word-send-popup button:disabled{opacity:.6; cursor:default;}
+  .word-send-popup .wsp-close{
+    background:transparent; color:#fff; padding:2px 5px; opacity:.7; font-size:14px;
+  }
   .blank-wrap{display:inline-block; position:relative; margin:0 2px; vertical-align:baseline;}
   .blank-num{
     font-size:10px; color:var(--gold); vertical-align:super; margin-right:1px; font-family:Georgia,serif;
@@ -285,6 +300,21 @@
     background:#fff8ea; padding:6px 12px; border-radius:999px; white-space:nowrap;
   }
   .top-inner a.back:hover{color:var(--ink); border-color:var(--gold);}
+  .nav-menu-wrap{position:relative;}
+  .icon-btn{
+    width:34px; height:34px; padding:0; display:flex; align-items:center; justify-content:center;
+    font-size:16px; line-height:1;
+  }
+  .nav-menu-dropdown{
+    position:absolute; top:calc(100% + 6px); right:0; z-index:30; min-width:160px;
+    background:#fffef9; border:1px solid var(--rule); border-radius:6px;
+    box-shadow:var(--card-shadow); padding:6px; display:flex; flex-direction:column; gap:2px;
+  }
+  .nav-menu-dropdown a{
+    display:block; padding:8px 10px; border-radius:4px; text-decoration:none;
+    color:var(--ink); font-size:13.5px; white-space:nowrap;
+  }
+  .nav-menu-dropdown a:hover{background:var(--paper-shadow);}
   .last-practiced-note{font-size:11.5px; color:var(--ink-soft); margin-top:4px;}
 </style>
 </head>
@@ -303,7 +333,16 @@
         <button class="lang-opt" data-lang="en" id="langOptEn">EN</button>
         <button class="lang-opt" data-lang="zh" id="langOptZh">CN</button>
       </div>
-      <a class="back" href="index.html" id="backToIndexLink">← 返回专练首页</a>
+      <a class="back" href="index.html" id="backToIndexLink">← 返回</a>
+      <div class="nav-menu-wrap" id="navMenuWrap">
+        <button class="pill-btn icon-btn" id="navMenuToggle" aria-label="目录" title="目录">☰</button>
+        <div class="nav-menu-dropdown hidden" id="navMenuDropdown">
+          <a href="index.html" id="menuLinkIndex">🏠 专练首页</a>
+          <a href="grammar.html" id="menuLinkGrammar">📘 语法错题本</a>
+          <a href="vocab.html" id="menuLinkVocab">📗 单词错题本</a>
+          <a href="writing.html" id="menuLinkWriting">✍️ 作文技巧</a>
+        </div>
+      </div>
     </div>
   </div>
 </header>
@@ -461,10 +500,163 @@
     document.getElementById('brandTitle').textContent = tr('Comprehension Cloze Practice', '综合填空 · Cloze 专项训练');
     document.getElementById('navHomeLabel').textContent = tr('All Passages', '全部篇章');
     document.getElementById('navCuratedLabel').textContent = tr('Curated Review', '精选错题专区');
-    document.getElementById('backToIndexLink').textContent = tr('← Back to Hub', '← 返回专练首页');
+    document.getElementById('backToIndexLink').textContent = tr('← Back', '← 返回');
+    document.getElementById('menuLinkIndex').textContent = tr('🏠 Practice Hub', '🏠 专练首页');
+    document.getElementById('menuLinkGrammar').textContent = tr('📘 Grammar Wrong Answers', '📘 语法错题本');
+    document.getElementById('menuLinkVocab').textContent = tr('📗 Vocabulary Wrong Words', '📗 单词错题本');
+    document.getElementById('menuLinkWriting').textContent = tr('✍️ Writing Skills', '✍️ 作文技巧');
   }
   updateLangSwitchUI();
   updateChromeLabels();
+
+  document.getElementById('navMenuToggle').onclick = function(e){
+    e.stopPropagation();
+    document.getElementById('navMenuDropdown').classList.toggle('hidden');
+  };
+  document.addEventListener('click', function(e){
+    var wrap = document.getElementById('navMenuWrap');
+    if(!wrap.contains(e.target)){
+      document.getElementById('navMenuDropdown').classList.add('hidden');
+    }
+  });
+
+  // ---------- SEND UNFAMILIAR WORD TO VOCAB (仅熟悉) ----------
+  var LS_VOCAB_WORDS = 'p6vocab_words_v1';
+
+  function vocabTodayStr(){
+    var d = new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function vocabAddDays(dateStr, days){
+    var d = new Date(dateStr+'T00:00:00');
+    d.setDate(d.getDate()+days);
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function sendWordToVocabList(word, ipa, meaning, example){
+    var list;
+    try{ list = JSON.parse(localStorage.getItem(LS_VOCAB_WORDS) || '[]'); }catch(e){ list = []; }
+    if(!Array.isArray(list)) list = [];
+    var dup = list.some(function(w){ return (w.word||'').toLowerCase() === word.toLowerCase(); });
+    if(dup) return 'duplicate';
+    var today = vocabTodayStr();
+    list.push({
+      id: 'w'+Date.now()+Math.floor(Math.random()*1000),
+      word: word,
+      ipa: ipa || '',
+      meaning: meaning || '',
+      example: example || '',
+      tier: 'familiar',
+      cycleStart: today,
+      checkpointIndex: 0,
+      mastered: false,
+      nextReviewAt: vocabAddDays(today, 1)
+    });
+    try{
+      localStorage.setItem(LS_VOCAB_WORDS, JSON.stringify(list));
+      return 'ok';
+    }catch(e){ return 'error'; }
+  }
+
+  function extractSentenceContext(paragraphEl, word){
+    try{
+      var text = paragraphEl.textContent;
+      var idx = text.toLowerCase().indexOf(word.toLowerCase());
+      if(idx === -1) return '';
+      var start = Math.max(0, text.lastIndexOf('.', idx - 1) + 1);
+      var end = text.indexOf('.', idx + word.length);
+      if(end === -1) end = Math.min(text.length, idx + word.length + 80);
+      return text.slice(start, end + 1).trim();
+    }catch(e){ return ''; }
+  }
+
+  var wordPopupEl = null;
+  function hideWordPopup(){
+    if(wordPopupEl){ wordPopupEl.remove(); wordPopupEl = null; }
+  }
+  function showWordPopup(word, x, y, paragraphEl){
+    hideWordPopup();
+    var pop = document.createElement('div');
+    pop.className = 'word-send-popup';
+    pop.style.left = x+'px';
+    pop.style.top = Math.max(10, y - 8)+'px';
+    pop.innerHTML = '<b>'+escapeHtml(word)+'</b>'
+      + '<button id="wspSendBtn">'+tr('Send to word list','送入词表')+'</button>'
+      + '<button class="wsp-close" id="wspCloseBtn">✕</button>';
+    document.body.appendChild(pop);
+    wordPopupEl = pop;
+    document.getElementById('wspCloseBtn').onclick = function(e){ e.stopPropagation(); hideWordPopup(); };
+    document.getElementById('wspSendBtn').onclick = function(e){
+      e.stopPropagation();
+      var btn = e.target;
+      btn.disabled = true;
+      btn.textContent = tr('Looking up…','查询中…');
+      lookupAndSendWord(word, paragraphEl, btn);
+    };
+  }
+
+  function lookupAndSendWord(word, paragraphEl, btn){
+    var ipa = '', example = '', meaningZh = '';
+    var dictPromise = fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(word.toLowerCase()))
+      .then(function(res){ return res.ok ? res.json() : null; })
+      .then(function(data){
+        if(!data || !data[0]) return;
+        var entry = data[0];
+        ipa = entry.phonetic || '';
+        if(!ipa && entry.phonetics){
+          var withText = entry.phonetics.find(function(p){ return p.text; });
+          if(withText) ipa = withText.text;
+        }
+        if(entry.meanings && entry.meanings[0] && entry.meanings[0].definitions && entry.meanings[0].definitions[0]){
+          var def = entry.meanings[0].definitions[0];
+          if(def.example) example = def.example;
+        }
+      })
+      .catch(function(){});
+    var translatePromise = fetch('https://api.mymemory.translated.net/get?q='+encodeURIComponent(word)+'&langpair=en|zh-CN')
+      .then(function(res){ return res.ok ? res.json() : null; })
+      .then(function(data){
+        if(data && data.responseData && data.responseData.translatedText){
+          meaningZh = data.responseData.translatedText;
+        }
+      })
+      .catch(function(){});
+
+    Promise.all([dictPromise, translatePromise]).then(function(){
+      if(!example && paragraphEl){
+        example = extractSentenceContext(paragraphEl, word);
+      }
+      var result = sendWordToVocabList(word, ipa, meaningZh, example);
+      if(result === 'ok'){
+        showToast(tr('Added "'+word+'" to your Familiar Word List!', '已把 "'+word+'" 送进仅熟悉词表！'));
+      } else if(result === 'duplicate'){
+        showToast(tr('"'+word+'" is already in your word list.', '"'+word+'" 已经在词表里了。'));
+      } else {
+        showToast(tr('Could not save — please try again.', '保存失败，请重试。'));
+      }
+      hideWordPopup();
+    });
+  }
+
+  document.addEventListener('mouseup', function(e){
+    if(e.target.closest && e.target.closest('.word-send-popup')) return;
+    var container = e.target.closest && e.target.closest('.passage-text');
+    if(!container){ hideWordPopup(); return; }
+    var sel = window.getSelection();
+    var text = sel.toString().trim();
+    if(!text || /\s/.test(text) || !/^[A-Za-z][A-Za-z'-]*$/.test(text)){ hideWordPopup(); return; }
+    var anchor = sel.anchorNode;
+    var p = anchor && (anchor.nodeType === 3 ? anchor.parentElement : anchor);
+    p = p && p.closest ? p.closest('p') : null;
+    showWordPopup(text, e.clientX, e.clientY, p);
+  });
+  document.addEventListener('click', function(e){
+    if(wordPopupEl && !e.target.closest('.word-send-popup')){
+      // give mouseup's own selection handling a chance to run first
+      setTimeout(function(){
+        if(!window.getSelection().toString().trim()) hideWordPopup();
+      }, 0);
+    }
+  });
 
   function setActiveNav(){
     document.getElementById('navHome').classList.toggle('active', route.name==='home' || route.name==='passage');
@@ -491,8 +683,8 @@
     var html = '';
     html += '<h1 class="page-title">'+tr('Choose a Passage','选择一篇练习')+'</h1>';
     html += '<p class="page-sub">'+tr(
-      PASSAGES.length+' Primary School English Comprehension Cloze passages, grouped by year. Some blanks accept more than one correct answer — the system will try to recognise reasonable synonyms. Each blank needs '+REQUIRED_MAIN_STREAK+' consecutive correct answers to turn green and be retired from testing — progress is tracked automatically on this device as long as you don\'t clear your browser data.',
-      '共 '+PASSAGES.length+' 篇小学英语综合填空 (Comprehension Cloze)，按年份分组。每空可能有不止一个正确答案，系统会尽量识别近义的合理答案。每个空格连续答对 '+REQUIRED_MAIN_STREAK+' 次会变绿并不再考察——只要不清理浏览器缓存，本机会自动记住学习进度。'
+      PASSAGES.length+' Primary School English Comprehension Cloze passages, grouped by year. Some blanks accept more than one correct answer — the system will try to recognise reasonable synonyms. If answered correctly '+REQUIRED_MAIN_STREAK+' times with at least 48 hours between attempts, that answer is retired from testing — targeted correction, smart workload reduction. Progress is tracked automatically on this device as long as you don\'t clear your browser data.',
+      '共 '+PASSAGES.length+' 篇小学英语综合填空 (Comprehension Cloze)，按年份分组。每空可能有不止一个正确答案，系统会尽量识别近义的合理答案。若能在间隔48小时以上，连续做对 '+REQUIRED_MAIN_STREAK+' 次，答案不再考察，从而实现"定向纠错、智能减负"。只要不清理浏览器缓存，本机会自动记住学习进度。'
     )+'</p>';
 
     var byYear = {};
@@ -546,6 +738,7 @@
 
   // ---------- PASSAGE PRACTICE ----------
   var REQUIRED_MAIN_STREAK = 2;
+  var MAIN_MASTERY_GAP_MS = 48 * 60 * 60 * 1000; // two counted-correct answers must be >=48h apart
 
   function mainStats(passage){
     var nums = Object.keys(passage.answers);
@@ -726,16 +919,21 @@
 
       if(ok){
         correctCount++;
-        entry.streak = (entry.streak || 0) + 1;
+        var gapOk = !entry.lastCountedAt || (Date.now() - entry.lastCountedAt) >= MAIN_MASTERY_GAP_MS;
+        if(gapOk){
+          entry.streak = (entry.streak || 0) + 1;
+          entry.lastCountedAt = Date.now();
+          if(entry.streak >= REQUIRED_MAIN_STREAK){
+            entry.mastered = true;
+            justMastered++;
+          }
+        }
         wrap.classList.add('correct');
         icon.textContent = '✓'; icon.className = 'mark-icon ok';
-        if(entry.streak >= REQUIRED_MAIN_STREAK){
-          entry.mastered = true;
-          justMastered++;
-        }
       } else {
         entry.streak = 0;
         entry.mastered = false;
+        entry.lastCountedAt = Date.now();
         wrap.classList.add('wrong');
         icon.textContent = '✗'; icon.className = 'mark-icon no';
         var hint = document.createElement('span');
